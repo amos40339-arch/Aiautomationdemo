@@ -1,0 +1,625 @@
+<title>Lekki Prime Sales Assistant</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a working sales preview. Buyer's WhatsApp on the left; the owner's side (dashboard, sheet, alerts, follow-ups, report) on the right. One tab bar on phones. */
+:root{
+  --bg:#EEF2F1; --surface:#FFFFFF; --surface-2:#F5F8F7; --line:#D7DFDC;
+  --ink:#0F2622; --muted:#5B6E69; --accent:#17806A; --accent-ink:#FFFFFF; --accent-soft:#DDF1EA;
+  --chat-bg:#E7EDE9; --bubble-in:#FFFFFF; --bubble-out:#D3F2E4;
+  --sheet-head:#F1F3F4; --sheet-line:#E2E5E7; --sheet-green:#188038;
+  --hot:#C2410C; --hot-soft:#FDE7DB; --warm:#A16207; --warm-soft:#FBF0D9; --cold:#64748B; --cold-soft:#E8ECF1;
+  --font-display:"Sora","Segoe UI",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1311; --surface:#121D1A; --surface-2:#172420; --line:#24342F;
+  --ink:#E4EEEA; --muted:#93A8A1; --accent:#3BB894; --accent-ink:#06120F; --accent-soft:#163A30;
+  --chat-bg:#0F1A17; --bubble-in:#1A2824; --bubble-out:#174536;
+  --sheet-head:#1A2522; --sheet-line:#26332F; --sheet-green:#4CC27A;
+  --hot:#FB8A5B; --hot-soft:#3A1D10; --warm:#E6B455; --warm-soft:#33280F; --cold:#9AA8BA; --cold-soft:#1E2630;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1311; --surface:#121D1A; --surface-2:#172420; --line:#24342F;
+  --ink:#E4EEEA; --muted:#93A8A1; --accent:#3BB894; --accent-ink:#06120F; --accent-soft:#163A30;
+  --chat-bg:#0F1A17; --bubble-in:#1A2824; --bubble-out:#174536;
+  --sheet-head:#1A2522; --sheet-line:#26332F; --sheet-green:#4CC27A;
+  --hot:#FB8A5B; --hot-soft:#3A1D10; --warm:#E6B455; --warm-soft:#33280F; --cold:#9AA8BA; --cold-soft:#1E2630;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{display:flex;flex-direction:column;gap:3px;min-width:0}
+.eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--font-display);font-size:clamp(22px,3vw,30px);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0;max-width:66ch}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 13.5px var(--font-body);border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 15px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn:focus-visible,.chip:focus-visible,.send:focus-visible,.tab:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.tabbar{overflow-x:auto;scrollbar-width:none}
+.tabbar::-webkit-scrollbar{display:none}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;width:max-content;min-width:100%}
+.tab{flex:1;white-space:nowrap;border:0;background:transparent;color:var(--muted);font:600 13.5px var(--font-body);padding:8px 13px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tab .dot{min-width:18px;padding:0 5px;border-radius:999px;background:var(--hot);color:#fff;font-size:11px;line-height:18px}
+.mob-only{display:none}
+.grid{display:grid;grid-template-columns:390px minmax(0,1fr);gap:18px;align-items:start}
+
+/* Phone */
+.phone{background:var(--surface);border:1px solid var(--line);border-radius:28px;overflow:hidden;display:flex;flex-direction:column;height:740px;max-height:calc(100vh - 32px);position:sticky;top:16px}
+.chat-head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--accent);color:var(--accent-ink)}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--accent-ink);color:var(--accent);display:grid;place-items:center;font:700 14px var(--font-display);flex:none}
+.chat-head b{font-family:var(--font-display);font-weight:600;font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-head small{opacity:.85;font-size:12px}
+.chat-head > div:nth-child(2){min-width:0}
+.msgs{flex:1;overflow-y:auto;background:var(--chat-bg);padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+.daytag{align-self:center;font:500 11.5px var(--font-mono);color:var(--muted);background:var(--surface);border-radius:8px;padding:3px 9px}
+.sysnote{align-self:center;text-align:center;font-size:11.5px;color:var(--muted);background:var(--surface);border-radius:8px;padding:4px 10px;max-width:90%}
+.bubble{max-width:84%;padding:8px 10px 6px;border-radius:12px;font-size:14.5px;white-space:pre-line;box-shadow:0 1px 0 rgba(0,0,0,.06);min-width:0;overflow-wrap:anywhere}
+.bubble.in{align-self:flex-start;background:var(--bubble-in);border-top-left-radius:4px}
+.bubble.out{align-self:flex-end;background:var(--bubble-out);border-top-right-radius:4px}
+.bubble time{display:block;text-align:right;font:400 10.5px var(--font-mono);color:var(--muted);margin-top:3px}
+.bubble b{font-weight:600}
+.typing{align-self:flex-start;background:var(--bubble-in);border-radius:12px;padding:10px 14px;display:flex;gap:4px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bob 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bob{0%,60%,100%{opacity:.3;transform:none}30%{opacity:1;transform:translateY(-3px)}}
+.listing{align-self:flex-start;width:84%;background:var(--bubble-in);border-radius:12px;overflow:hidden;font-size:13.5px}
+.listing .ph{height:70px;background:linear-gradient(135deg,var(--accent-soft),var(--surface-2));display:flex;align-items:flex-end;justify-content:space-between;padding:8px 10px;font:600 11px var(--font-mono);color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+.listing .bd{padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.listing .bd strong{font-family:var(--font-display);font-size:14px;font-weight:600}
+.listing .price{font:600 14px var(--font-mono);color:var(--accent)}
+.listing .meta{color:var(--muted);font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px 0;background:var(--chat-bg)}
+.chip{border:1px solid var(--accent);background:var(--surface);color:var(--accent);border-radius:999px;padding:6px 11px;font:500 13px var(--font-body);cursor:pointer}
+.chip:hover{background:var(--accent-soft)}
+form.compose{display:flex;gap:8px;padding:10px 12px 12px;background:var(--chat-bg)}
+form.compose input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:10px 14px;font:400 14.5px var(--font-body)}
+.send{width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);cursor:pointer;font-size:17px;flex:none}
+
+/* Right side */
+.right{display:flex;flex-direction:column;gap:14px;min-width:0}
+.view{display:none;flex-direction:column;gap:14px;min-width:0}
+.view.active{display:flex}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;min-width:0}
+.panel h2{font-family:var(--font-display);font-size:15.5px;font-weight:600;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.panel h2 span{font:400 12px var(--font-mono);color:var(--muted)}
+.lead-in{margin:0 0 4px;color:var(--muted);font-size:13.5px;max-width:70ch}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.kpi .n{font:600 26px var(--font-display);font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12.5px;color:var(--muted)}
+.kpi.hot .n{color:var(--hot)}
+.tablebox{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+.dash table{min-width:640px}
+th{text-align:left;font:500 11.5px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.new td{animation:flash 1.8s ease-out}
+@keyframes flash{from{background:var(--accent-soft)}to{background:transparent}}
+.pill{display:inline-block;font:600 11.5px var(--font-body);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.pill.hot{background:var(--hot-soft);color:var(--hot)}
+.pill.warm{background:var(--warm-soft);color:var(--warm)}
+.pill.cold{background:var(--cold-soft);color:var(--cold)}
+.pill.ok{background:var(--accent-soft);color:var(--accent)}
+.ch{font:500 11.5px var(--font-mono);white-space:nowrap}
+.ex{font:500 10px var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:5px;white-space:nowrap}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:8px;align-items:center;font-size:13px}
+.bar .tr{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-top:4px}
+.bar .fl{height:100%;background:var(--accent);border-radius:99px;transition:width .5s}
+.bar .c{font:500 13px var(--font-mono);text-align:right}
+.chan{display:flex;flex-direction:column;gap:9px}
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:13.5px}
+.feed li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start}
+.feed .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:13px;background:var(--surface-2)}
+.feed time{display:block;font:400 11px var(--font-mono);color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+
+/* Sheet */
+.sheet{border:1px solid var(--sheet-line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.sheet-bar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--sheet-line);flex-wrap:wrap}
+.sheet-ic{width:22px;height:28px;border-radius:3px;background:var(--sheet-green);position:relative;flex:none}
+.sheet-ic::after{content:"";position:absolute;inset:9px 5px 6px;border:2px solid #fff;border-radius:1px}
+.sheet-bar b{font-weight:600;font-size:14px}
+.sheet-bar small{color:var(--muted);font:400 11.5px var(--font-mono);margin-left:auto}
+.sheet-scroll{overflow-x:auto}
+.sheet table{font-size:12.5px;min-width:1040px;border-collapse:collapse}
+.sheet th,.sheet td{border:1px solid var(--sheet-line);padding:5px 8px;white-space:nowrap;text-transform:none;letter-spacing:0}
+.sheet thead th{background:var(--sheet-head);color:var(--muted);font:500 11px var(--font-mono);text-align:center}
+.sheet tbody th{background:var(--sheet-head);color:var(--muted);font:500 11px var(--font-mono);text-align:center;width:34px}
+.sheet tr.hdr td{background:var(--accent-soft);font-weight:600;color:var(--ink)}
+.sheet td.s-hot{background:var(--hot-soft);color:var(--hot);font-weight:600}
+.sheet td.s-warm{background:var(--warm-soft);color:var(--warm);font-weight:600}
+.sheet td.s-cold{background:var(--cold-soft);color:var(--cold);font-weight:600}
+.sheet-tabs{display:flex;gap:2px;padding:6px 10px;background:var(--sheet-head);border-top:1px solid var(--sheet-line);font-size:12px;overflow-x:auto}
+.sheet-tabs span{padding:3px 10px;border-radius:4px;color:var(--muted);white-space:nowrap}
+.sheet-tabs span.on{background:var(--surface);color:var(--sheet-green);font-weight:600}
+
+/* WhatsApp-style message cards (alerts, report) */
+.wa-list{display:flex;flex-direction:column;gap:12px}
+.wa{background:var(--chat-bg);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.wa-from{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.wa-from .avatar{width:26px;height:26px;font-size:10px;background:var(--accent);color:var(--accent-ink)}
+.wa .bubble{max-width:100%;align-self:stretch}
+.wa .bubble.hotb{border-left:4px solid var(--hot)}
+.empty{padding:18px;text-align:center;color:var(--muted);font-size:13.5px;background:var(--surface-2);border-radius:12px}
+
+/* How it works */
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;counter-reset:s}
+.step{background:var(--surface-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;position:relative}
+.step .k{font:600 11px var(--font-mono);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.step b{font-family:var(--font-display);font-weight:600;font-size:14px}
+.step p{margin:0;font-size:12.5px;color:var(--muted)}
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin:0;padding:0;list-style:none;font-size:13.5px}
+.checks li{display:flex;gap:8px}
+.checks li::before{content:"✓";color:var(--accent);font-weight:700}
+
+.toast{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:330px;background:var(--surface);border:1px solid var(--hot);border-left:5px solid var(--hot);border-radius:12px;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.18);font-size:13.5px;z-index:20;transform:translateY(150%);transition:transform .35s}
+.toast.show{transform:none}
+.toast b{display:block;font-family:var(--font-display);color:var(--hot);margin-bottom:2px}
+
+@media (max-width:960px){
+  .mob-only{display:inline-flex}
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .phone{position:static;height:640px;max-height:none}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two,.checks{grid-template-columns:minmax(0,1fr)}
+  .flow{grid-template-columns:minmax(0,1fr)}
+  [data-view="chat"] .right{display:none}
+  .wrap:not([data-view="chat"]) .phone{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap" id="app" data-view="chat">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">AE Intelligence · Live preview</span>
+      <h1><span class="brandName">Lekki Prime Homes</span> Sales Assistant</h1>
+      <p class="sub">Chat as a buyer, or press “Watch it work”. The owner's side updates live: every enquiry recorded in the sheet, buyers scored, inspections booked, agents alerted, follow-ups scheduled and a daily report sent.</p>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="autoplay" type="button">▶ Watch it work</button>
+      <button class="btn" id="reset" type="button">Restart</button>
+    </div>
+  </header>
+
+  <div class="tabbar">
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab mob-only" role="tab" data-v="chat" type="button">Buyer chat</button>
+      <button class="tab" role="tab" data-v="dash" type="button">Dashboard<span class="dot" hidden></span></button>
+      <button class="tab" role="tab" data-v="sheet" type="button">Lead sheet</button>
+      <button class="tab" role="tab" data-v="alerts" type="button">Agent alerts</button>
+      <button class="tab" role="tab" data-v="follow" type="button">Follow-ups</button>
+      <button class="tab" role="tab" data-v="report" type="button">Daily report</button>
+      <button class="tab" role="tab" data-v="how" type="button">How it works</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="phone" aria-label="Buyer WhatsApp chat">
+      <div class="chat-head">
+        <div class="avatar" id="initials">LP</div>
+        <div><b class="brandName">Lekki Prime Homes</b><small>Business account · replies instantly, 24/7</small></div>
+      </div>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <div class="chips" id="chips"></div>
+      <form class="compose" id="compose" autocomplete="off">
+        <input id="msgInput" type="text" placeholder="Type as a buyer…" aria-label="Message">
+        <button class="send" type="submit" aria-label="Send">➤</button>
+      </form>
+    </section>
+
+    <section class="right" aria-label="Owner side">
+      <!-- Dashboard -->
+      <div class="view dash" data-view-id="dash">
+        <div class="kpis">
+          <div class="kpi"><div class="n" id="kEnq">0</div><div class="l">Enquiries today</div></div>
+          <div class="kpi hot"><div class="n" id="kHot">0</div><div class="l">Hot leads</div></div>
+          <div class="kpi"><div class="n" id="kInsp">0</div><div class="l">Inspections booked</div></div>
+          <div class="kpi"><div class="n">2s</div><div class="l">Average reply time</div></div>
+        </div>
+        <div class="panel">
+          <h2>Today's leads <span>scored automatically</span></h2>
+          <div class="tablebox"><table>
+            <thead><tr><th>Buyer</th><th>Channel</th><th>Interested in</th><th>Budget</th><th>Score</th><th>Next step</th><th>Time</th></tr></thead>
+            <tbody id="dashLeads"></tbody>
+          </table></div>
+        </div>
+        <div class="two">
+          <div class="panel"><h2>Most-asked properties <span>today</span></h2><div class="bars" id="bars"></div></div>
+          <div class="panel"><h2>Where enquiries come from <span>today</span></h2><div class="bars chan" id="chan"></div></div>
+        </div>
+        <div class="panel"><h2>Activity <span>logged automatically</span></h2><ul class="feed" id="feed"></ul></div>
+      </div>
+
+      <!-- Sheet -->
+      <div class="view" data-view-id="sheet">
+        <p class="lead-in">Every conversation becomes a row in the business's own Google Sheet: no copying from chats, nothing forgotten. Rows below update as you chat.</p>
+        <div class="sheet">
+          <div class="sheet-bar"><span class="sheet-ic" aria-hidden="true"></span><b id="sheetName">Lekki Prime Homes · Leads</b><small id="sheetSaved">All changes saved</small></div>
+          <div class="sheet-scroll"><table>
+            <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th><th>L</th></tr></thead>
+            <tbody id="sheetBody"></tbody>
+          </table></div>
+          <div class="sheet-tabs"><span class="on">Leads</span><span>Inspections</span><span>Follow-ups</span><span>Daily reports</span></div>
+        </div>
+        <p class="note">Preview of the sheet layout. In a live setup this is a real Google Sheet the owner and agents can open, filter and share.</p>
+      </div>
+
+      <!-- Alerts -->
+      <div class="view" data-view-id="alerts">
+        <p class="lead-in">The moment a serious buyer appears, the assigned agent gets a WhatsApp alert with everything needed to call them. Questions the assistant can't answer are handed to a person with the full chat attached.</p>
+        <div class="wa-list" id="alertsList"></div>
+      </div>
+
+      <!-- Follow-ups -->
+      <div class="view" data-view-id="follow">
+        <p class="lead-in">Most buyers don't decide on the first chat. The assistant follows up on schedule, so nobody who showed interest is forgotten.</p>
+        <div class="panel">
+          <div class="tablebox"><table style="min-width:620px">
+            <thead><tr><th>Buyer</th><th>When</th><th>Message the assistant sends</th><th>Status</th></tr></thead>
+            <tbody id="followBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Report -->
+      <div class="view" data-view-id="report">
+        <p class="lead-in">Every evening at 7:00pm the owner gets a summary on WhatsApp. The same report is saved in the sheet.</p>
+        <div class="wa" id="reportCard"></div>
+      </div>
+
+      <!-- How it works -->
+      <div class="view" data-view-id="how">
+        <div class="panel">
+          <h2>How it works</h2>
+          <div class="flow">
+            <div class="step"><span class="k">Step 1</span><b>Buyer messages</b><p>On WhatsApp, Instagram or Facebook, any time of day.</p></div>
+            <div class="step"><span class="k">Step 2</span><b>Instant answer</b><p>Replies from your real listings: prices, locations, payment plans, documents.</p></div>
+            <div class="step"><span class="k">Step 3</span><b>Qualify and score</b><p>Asks budget and timeline in a natural way, then marks the buyer hot, warm or cold.</p></div>
+            <div class="step"><span class="k">Step 4</span><b>Book and alert</b><p>Books inspections and alerts your agent the moment a serious buyer appears.</p></div>
+            <div class="step"><span class="k">Step 5</span><b>Record and follow up</b><p>Saves everything in your Google Sheet, follows up, and sends you a daily report.</p></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="panel">
+            <h2>What the business gets</h2>
+            <ul class="checks">
+              <li>Replies in seconds, 24/7</li>
+              <li>Every enquiry in one sheet</li>
+              <li>Hot / warm / cold lead scoring</li>
+              <li>Inspection booking and reminders</li>
+              <li>Hot-lead alerts to agents</li>
+              <li>Automatic follow-ups</li>
+              <li>Daily report to the owner</li>
+              <li>Your team can take over any chat</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h2>What we need from you</h2>
+            <ul class="checks">
+              <li>Your current listings and prices</li>
+              <li>Payment plans and documents</li>
+              <li>Questions buyers ask most</li>
+              <li>Inspection days and times</li>
+              <li>Which agent gets which alerts</li>
+              <li>Your business WhatsApp number</li>
+            </ul>
+          </div>
+        </div>
+        <p class="note">This page is a preview with sample listings. The live system runs on the business's own WhatsApp Business number, writes to its own Google Sheet, and is set up with its real properties. Built by AE Intelligence.</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"><b>🔥 Hot lead: agent alerted</b><span id="toastMsg"></span></div>
+
+<script>
+(function(){
+const LISTINGS=[
+ {id:"chv4",title:"4-Bed Semi-Detached Duplex + BQ",area:"Chevron, Lekki",loc:["chevron","lekki"],beds:4,type:"house",price:185e6,plan:"40% deposit, balance over 12 months",status:"Available",doc:"Governor's Consent"},
+ {id:"ikt5",title:"5-Bed Fully Detached Duplex",area:"Ikate, Lekki",loc:["ikate","lekki"],beds:5,type:"house",price:320e6,plan:"50% deposit, balance over 6 months",status:"Available",doc:"C of O"},
+ {id:"ajh3",title:"3-Bed Terrace Duplex",area:"Abraham Adesanya, Ajah",loc:["ajah","abraham adesanya","sangotedo"],beds:3,type:"house",price:95e6,plan:"30% deposit, balance over 18 months",status:"2 units left",doc:"Deed of Assignment"},
+ {id:"lp12",title:"2-Bed Serviced Apartment",area:"Lekki Phase 1",loc:["lekki phase 1","phase 1","lekki"],beds:2,type:"apartment",price:120e6,plan:"Outright or 12-month plan",status:"Available",doc:"Governor's Consent"},
+ {id:"ikb",title:"500sqm Dry Land",area:"Ibeju-Lekki",loc:["ibeju","ibeju-lekki","ibeju lekki","epe"],beds:0,type:"land",price:18e6,plan:"₦3M deposit, balance over 6 months",status:"Available",doc:"C of O"},
+ {id:"iky4",title:"4-Bed Terrace + 2 BQs",area:"Old Ikoyi",loc:["ikoyi"],beds:4,type:"house",price:650e6,plan:"Outright purchase",status:"Off-plan, ready Q3 2027",doc:"C of O"},
+ {id:"ikr3",title:"3-Bed Flat for Rent",area:"Ikota, Lekki",loc:["ikota","vgc"],beds:3,type:"rent",price:9e6,plan:"₦9M per year, 1 year upfront",status:"Available Nov 1",doc:"Tenancy agreement"}
+];
+const SLOTS=["Sat, 10:00am","Sat, 2:00pm","Mon, 11:00am"];
+const AGENTS=["Femi (Sales)","Blessing (Sales)"];
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const msgs=$("#msgs"),chips=$("#chips"),input=$("#msgInput"),app=$("#app");
+let S,leads,asks,feed,alerts,unseen=0,playing=false,view="chat",brand="Lekki Prime Homes";
+
+/* ---------- brand from link (#Sterlingwell-Homes) ---------- */
+function readBrand(){
+  let h="";try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}
+  brand=/^[A-Za-z0-9-]{2,48}$/.test(h)?h.split("-").filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1)).join(" "):"Lekki Prime Homes";
+  $$(".brandName").forEach(e=>e.textContent=brand);
+  $("#initials").textContent=brand.split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+  $("#sheetName").textContent=brand+" · Leads";
+}
+
+/* ---------- helpers ---------- */
+function fmt(n){if(n>=1e9)return"₦"+(n/1e9).toFixed(n%1e9?1:0)+"B";if(n>=1e6)return"₦"+Math.round(n/1e6)+"M";return"₦"+n.toLocaleString()}
+function now(){return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+function today(){return new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}
+function dayName(){return new Date().toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function first(n){return String(n||"there").split(" ")[0]}
+function fakePhone(){const p=["0803","0806","0813","0816","0703","0706","0810","0905"];return p[Math.floor(Math.random()*p.length)]+" *** "+String(1000+Math.floor(Math.random()*9000))}
+
+/* ---------- sample data ---------- */
+function seed(){
+  S={stage:"start",interest:null,budget:null,timeline:null,name:null,phone:fakePhone(),slot:null,leadId:null};
+  leads=[
+   {id:"x1",name:"Mrs. Adaeze O.",phone:"0803 *** 4412",channel:"WhatsApp",interest:"4-Bed Semi-Detached, Chevron",budget:"₦200M",timeline:"This month",score:"hot",status:"Inspection booked",next:"Inspection Sat 10:00am",agent:AGENTS[0],time:"09:12",ex:true},
+   {id:"x2",name:"Tunde B.",phone:"0816 *** 2290",channel:"Instagram",interest:"3-Bed Terrace, Ajah",budget:"₦100M",timeline:"1–3 months",score:"warm",status:"Follow-up scheduled",next:"Follow-up tomorrow",agent:AGENTS[1],time:"10:47",ex:true},
+   {id:"x3",name:"David A. (London)",phone:"+44 *** 7731",channel:"WhatsApp",interest:"Land, Ibeju-Lekki",budget:"₦20M",timeline:"Just exploring",score:"cold",status:"Nurture list",next:"New listings in 7 days",agent:AGENTS[1],time:"02:31",ex:true},
+   {id:"x4",name:"Kemi F.",phone:"0706 *** 5108",channel:"Facebook",interest:"2-Bed Apartment, Lekki Phase 1",budget:"₦120M",timeline:"1–3 months",score:"warm",status:"Details sent",next:"Follow-up in 2 days",agent:AGENTS[0],time:"11:05",ex:true}
+  ];
+  asks={chv4:3,ajh3:2,ikb:2,lp12:2,ikt5:1,iky4:0,ikr3:1};
+  feed=[
+   {ic:"🔥",t:"Hot-lead alert sent to Femi: Mrs. Adaeze O., ₦200M budget",time:"09:13",ex:true},
+   {ic:"🌙",t:"After-hours enquiry answered at 2:31am: David A. (London)",time:"02:31",ex:true},
+   {ic:"📷",t:"Instagram DM answered and logged: Tunde B.",time:"10:47",ex:true}
+  ];
+  alerts=[
+   {type:"hot",agent:AGENTS[0],time:"09:13",ex:true,text:"🔥 <b>HOT LEAD</b>\n<b>Mrs. Adaeze O.</b> · 0803 *** 4412\nWants: 4-Bed Semi-Detached, Chevron\nBudget: ₦200M · Buying: this month\nInspection: Sat 10:00am\n\nCall her within 30 minutes. Full chat is in the sheet, row 2."},
+   {type:"handoff",agent:AGENTS[1],time:"10:52",ex:true,text:"🙋 <b>NEEDS A PERSON</b>\n<b>Tunde B.</b> (Instagram) asked: \"Can I pay part in dollars?\"\nThe assistant told him an agent will reply shortly. Tap to open the chat."}
+  ];
+  unseen=0;
+}
+
+/* ---------- chat rendering ---------- */
+function addMsg(text,who){
+  const b=document.createElement("div");b.className="bubble "+who;
+  b.innerHTML=text+"<time>"+now()+(who==="out"?" ✓✓":"")+"</time>";
+  msgs.appendChild(b);msgs.scrollTop=msgs.scrollHeight;
+}
+function addListing(l){
+  const d=document.createElement("div");d.className="listing";
+  d.innerHTML=`<div class="ph"><span>${esc(l.area)}</span><span>${esc(l.doc)}</span></div><div class="bd"><strong>${esc(l.title)}</strong><span class="price">${fmt(l.price)}${l.type==="rent"?" / year":""}</span><span class="meta">${esc(l.plan)} · ${esc(l.status)}</span></div>`;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+}
+function setChips(arr){chips.innerHTML="";if(playing)return;arr.forEach(c=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=c;b.onclick=()=>send(c);chips.appendChild(b)})}
+function botSay(parts,chipList){
+  const t=document.createElement("div");t.className="typing";t.innerHTML="<i></i><i></i><i></i>";msgs.appendChild(t);msgs.scrollTop=msgs.scrollHeight;
+  chips.innerHTML="";
+  setTimeout(()=>{t.remove();parts.forEach(p=>typeof p==="string"?addMsg(p,"in"):addListing(p));setChips(chipList||[])},750);
+}
+
+/* ---------- understanding the buyer ---------- */
+function parseBudget(t){
+  const m=t.match(/(?:₦|n|ngn)?\s*(\d+(?:\.\d+)?)\s*(b|bn|billion|m|mil|million|k)\b/i);
+  if(!m)return null;let v=parseFloat(m[1]);const u=m[2].toLowerCase();
+  if(u.startsWith("b"))v*=1e9;else if(u.startsWith("m"))v*=1e6;else v*=1e3;return v;
+}
+function search(t){
+  const q=t.toLowerCase();let r=LISTINGS.slice();
+  const beds=q.match(/(\d)\s*-?\s*(bed|bedroom|br)/);
+  const isLand=/\bland|plot|sqm/.test(q),isRent=/\brent|lease|yearly/.test(q);
+  const locHit=LISTINGS.some(l=>l.loc.some(k=>q.includes(k)));
+  if(isLand)r=r.filter(l=>l.type==="land");
+  else if(isRent)r=r.filter(l=>l.type==="rent");
+  else r=r.filter(l=>l.type!=="land"&&l.type!=="rent");
+  if(beds&&!isLand){const f=r.filter(l=>l.beds===+beds[1]);if(f.length)r=f}
+  if(locHit){const f=r.filter(l=>l.loc.some(k=>q.includes(k)));if(f.length)r=f}
+  const b=parseBudget(q);let over=false;
+  if(b){S.budget=b;const f=r.filter(l=>l.price<=b*1.05);if(f.length)r=f;else{over=true;r=r.sort((a,c)=>a.price-c.price).slice(0,1)}}
+  return {r:r.slice(0,3),specific:!!(beds||locHit||b||isLand||isRent),over};
+}
+function score(){
+  let p=0;if(S.budget)p++;if(S.timeline==="This month")p+=2;else if(S.timeline==="1–3 months")p++;if(S.slot)p+=2;if(S.name)p++;
+  return p>=4?"hot":p>=2?"warm":"cold";
+}
+function upsertLead(){
+  if(!S.leadId){S.leadId="l"+Date.now();leads.unshift({id:S.leadId,fresh:true,time:now(),channel:"WhatsApp",phone:S.phone,agent:AGENTS[leads.length%2]});}
+  const L=leads.find(l=>l.id===S.leadId);
+  L.name=S.name||"New buyer";L.interest=S.interest?S.interest.title+", "+S.interest.area.split(",")[0]:"Browsing";
+  L.budget=S.budget?fmt(S.budget):"–";L.timeline=S.timeline||"–";L.score=score();
+  L.status=S.slot?"Inspection booked":S.stage==="done"?"Follow-up scheduled":"In conversation";
+  L.next=S.slot?"Inspection "+S.slot:(L.score==="hot"?"Agent to call today":L.score==="warm"?"Follow-up in 24h":"New listings in 7 days");
+  L.fresh=true;unseen++;render();
+}
+function log(ic,t){feed.unshift({ic,t,time:now()});render()}
+function hotAlert(){
+  const L=leads.find(l=>l.id===S.leadId);const row=leads.length-leads.indexOf(L)+1;
+  alerts.unshift({type:"hot",agent:L.agent,time:now(),text:`🔥 <b>HOT LEAD</b>\n<b>${esc(S.name)}</b> · ${esc(S.phone)}\nWants: ${esc(S.interest?S.interest.title+", "+S.interest.area:"")}\nBudget: ${S.budget?fmt(S.budget):"not given"} · Buying: ${esc((S.timeline||"").toLowerCase())}\nInspection: ${esc(S.slot)}\n\nCall within 30 minutes. Full chat is in the sheet, row ${row}.`});
+  $("#toastMsg").textContent=`${S.name} · ${S.interest?S.interest.title:"property"} · ${S.budget?fmt(S.budget):""} · inspection ${S.slot}. Sent to ${L.agent}.`;
+  const t=$("#toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),5000);
+  log("🔥",`Hot-lead alert sent to ${L.agent}: ${S.name}, ${S.budget?fmt(S.budget):""} budget`);
+}
+function handoff(q){
+  alerts.unshift({type:"handoff",agent:AGENTS[0],time:now(),text:`🙋 <b>NEEDS A PERSON</b>\n<b>${esc(S.name||"A buyer")}</b> (WhatsApp) asked: "${esc(q.slice(0,90))}"\nThe assistant told them an agent will reply shortly. Tap to open the chat.`});
+  log("🙋",`Question handed to ${AGENTS[0]}: "${q.slice(0,50)}"`);
+}
+
+/* ---------- owner-side rendering ---------- */
+function followUps(){
+  const out=[];
+  leads.forEach(l=>{
+    const prop=l.interest.split(",")[0];
+    if(/Inspection/.test(l.next)){
+      const slot=l.next.replace("Inspection ","");
+      out.push({name:l.name,ex:l.ex,when:"Day before inspection",msg:`Hi ${first(l.name)}, a reminder of your inspection of the ${prop}, ${slot}. Reply 1 to confirm or 2 to reschedule.`,status:"Scheduled"});
+      out.push({name:l.name,ex:l.ex,when:"After inspection",msg:`Hi ${first(l.name)}, how did you find the ${prop}? I can send the payment plan breakdown or hold a unit for you.`,status:"Scheduled"});
+    }else if(l.score==="warm"){
+      out.push({name:l.name,ex:l.ex,when:"24 hours after last message",msg:`Hi ${first(l.name)}, still interested in the ${prop}? Units are moving. Would you like to inspect this week?`,status:l.ex?"Sent ✓":"Scheduled"});
+    }else if(l.score==="cold"){
+      out.push({name:l.name,ex:l.ex,when:"In 7 days",msg:`Hi ${first(l.name)}, new listings just came in that match what you asked about. Want me to send them?`,status:"Scheduled"});
+    }else{
+      out.push({name:l.name,ex:l.ex,when:"Today",msg:`Agent call first; the assistant follows up if the buyer goes quiet for 24 hours.`,status:"Waiting for agent"});
+    }
+  });
+  return out;
+}
+function render(){
+  const hot=leads.filter(l=>l.score==="hot").length,insp=leads.filter(l=>/Inspection/.test(l.next)).length;
+  $("#kEnq").textContent=leads.length;$("#kHot").textContent=hot;$("#kInsp").textContent=insp;
+  const pill=s=>`<span class="pill ${s}">${s==="hot"?"🔥 Hot":s==="warm"?"Warm":"Cold"}</span>`;
+  const ex=l=>l.ex?'<span class="ex">EXAMPLE</span>':"";
+  $("#dashLeads").innerHTML=leads.map(l=>`<tr class="${l.fresh?"new":""}"><td>${esc(l.name)}${ex(l)}</td><td class="ch">${esc(l.channel)}</td><td>${esc(l.interest)}</td><td class="num">${esc(l.budget)}</td><td>${pill(l.score)}</td><td>${esc(l.next)}</td><td class="num">${esc(l.time)}</td></tr>`).join("");
+  // sheet
+  const hdr=["Date","Time","Name","Phone","Channel","Interested in","Budget","Timeline","Score","Status","Next action","Agent"];
+  $("#sheetBody").innerHTML=`<tr class="hdr"><th>1</th>${hdr.map(h=>`<td>${h}</td>`).join("")}</tr>`+
+    leads.slice().reverse().map((l,i)=>`<tr class="${l.fresh?"new":""}"><th>${i+2}</th><td>${today()}</td><td>${esc(l.time)}</td><td>${esc(l.name)}${ex(l)}</td><td>${esc(l.phone)}</td><td>${esc(l.channel)}</td><td>${esc(l.interest)}</td><td>${esc(l.budget)}</td><td>${esc(l.timeline)}</td><td class="s-${l.score}">${l.score==="hot"?"HOT":l.score==="warm"?"WARM":"COLD"}</td><td>${esc(l.status)}</td><td>${esc(l.next)}</td><td>${esc(l.agent)}</td></tr>`).join("");
+  $("#sheetSaved").textContent="All changes saved · "+now();
+  // bars
+  const max=Math.max(1,...Object.values(asks));
+  $("#bars").innerHTML=LISTINGS.map(l=>({l,c:asks[l.id]||0})).sort((a,b)=>b.c-a.c).slice(0,5).map(({l,c})=>`<div class="bar"><div>${esc(l.title)}, ${esc(l.area.split(",")[0])}<div class="tr"><div class="fl" style="width:${c/max*100}%"></div></div></div><span class="c">${c}</span></div>`).join("");
+  const ch={WhatsApp:0,Instagram:0,Facebook:0};leads.forEach(l=>ch[l.channel]=(ch[l.channel]||0)+1);const cm=Math.max(1,...Object.values(ch));
+  $("#chan").innerHTML=Object.entries(ch).map(([k,v])=>`<div class="bar"><div>${k}<div class="tr"><div class="fl" style="width:${v/cm*100}%"></div></div></div><span class="c">${v}</span></div>`).join("");
+  $("#feed").innerHTML=feed.slice(0,7).map(f=>`<li><span class="ic">${f.ic}</span><div>${esc(f.t)}${f.ex?'<span class="ex">EXAMPLE</span>':""}<time>${esc(f.time)}</time></div></li>`).join("");
+  // alerts
+  $("#alertsList").innerHTML=alerts.map(a=>`<div class="wa"><div class="wa-from"><span class="avatar">AI</span>${esc(brand)} Assistant → ${esc(a.agent)} · ${esc(a.time)}${a.ex?'<span class="ex">EXAMPLE</span>':""}</div><div class="bubble in ${a.type==="hot"?"hotb":""}">${a.text}</div></div>`).join("")||'<div class="empty">No alerts yet. Book an inspection in the chat to trigger one.</div>';
+  // follow-ups
+  $("#followBody").innerHTML=followUps().map(f=>`<tr><td>${esc(f.name)}${f.ex?'<span class="ex">EXAMPLE</span>':""}</td><td>${esc(f.when)}</td><td>${esc(f.msg)}</td><td><span class="pill ${/Sent/.test(f.status)?"ok":f.status==="Scheduled"?"warm":"cold"}">${esc(f.status)}</span></td></tr>`).join("");
+  // report
+  const top=LISTINGS.map(l=>({l,c:asks[l.id]||0})).sort((a,b)=>b.c-a.c).slice(0,3);
+  const handoffs=alerts.filter(a=>a.type==="handoff").length;
+  const hotNames=leads.filter(l=>l.score==="hot").map(l=>l.name).join(", ")||"none yet";
+  $("#reportCard").innerHTML=`<div class="wa-from"><span class="avatar">AI</span>${esc(brand)} Assistant → Owner · 7:00pm</div><div class="bubble in">📊 <b>Daily report · ${dayName()}</b>
+
+<b>Enquiries:</b> ${leads.length} (WhatsApp ${ch.WhatsApp}, Instagram ${ch.Instagram}, Facebook ${ch.Facebook})
+<b>Hot leads:</b> ${hot} (${esc(hotNames)})
+<b>Inspections booked:</b> ${insp}
+<b>Replied after hours:</b> ${leads.filter(l=>/^0[0-6]|^2[0-3]/.test(l.time)).length}
+<b>Average reply time:</b> 2 seconds
+
+<b>Most asked about:</b>
+${top.map((t,i)=>`${i+1}. ${esc(t.l.title)}, ${esc(t.l.area.split(",")[0])} (${t.c})`).join("\n")}
+
+<b>Needs your attention:</b> ${handoffs} question${handoffs===1?"":"s"} handed to agents
+<b>Follow-ups going out tomorrow:</b> ${followUps().filter(f=>f.status==="Scheduled").length}
+
+Full details are in the Leads sheet.</div>`;
+  // badges
+  $$(".tab .dot").forEach(d=>{d.textContent=unseen;d.hidden=!(unseen>0&&view==="chat")});
+  setTimeout(()=>leads.forEach(l=>l.fresh=false),50);
+}
+
+/* ---------- conversation ---------- */
+const OPEN_CHIPS=["4-bed in Lekki under ₦200M","Land in Ibeju-Lekki","3-bed under ₦100M","Something to rent"];
+function welcome(){return `Hello 👋 Welcome to ${esc(brand)}.\nI can show you available properties with prices and payment plans, and book an inspection for you. What are you looking for?`}
+function reply(t){
+  const q=t.toLowerCase().trim();
+  if(S.stage==="name"){
+    S.name=t.replace(/^(my name is|i am|i'm|its|it's|this is|name:?)\s+/i,"").split(/[,.!]/)[0].trim().replace(/\b\w/g,c=>c.toUpperCase()).slice(0,40)||"Buyer";
+    S.stage="slot";upsertLead();log("📝",`New lead saved to sheet: ${S.name} (${S.phone})`);
+    return botSay([`Thank you, ${esc(first(S.name))}. Would you like to inspect the ${esc(S.interest?S.interest.title:"property")}? Available slots this week:`],[...SLOTS,"Not yet, just send details"]);
+  }
+  if(S.stage==="slot"){
+    const slot=SLOTS.find(s=>q.includes(s.toLowerCase()))||SLOTS.find(s=>q.includes(s.toLowerCase().slice(0,3))&&q.includes(s.split(", ")[1].replace(":00","").slice(0,-2)));
+    if(slot){S.slot=slot;S.stage="done";upsertLead();log("📅",`Inspection booked: ${S.name}, ${slot}`);
+      if(score()==="hot")hotAlert();
+      return botSay([`Booked ✅\n<b>${esc(S.interest?S.interest.title:"Inspection")}</b>\n${esc(S.interest?S.interest.area:"")}\n${slot}\n\nOur agent will call you shortly to confirm, and you'll get a reminder the day before. Anything else I can help with?`],["Payment plan details","What documents does it have?","See other properties"]);}
+    if(/not yet|details|later|^no/.test(q)){S.stage="done";upsertLead();log("⏰",`Follow-up scheduled for ${S.name}`);
+      return botSay([`No problem. I've noted your interest, and our team will send photos, the title documents and the full payment plan. I'll check in with you tomorrow. You can message here anytime.`],["Payment plan details","See other properties"]);}
+  }
+  if(S.stage==="timeline"){
+    S.timeline=/this month|now|asap|urgent|this week|immediately|ready/.test(q)?"This month":/3|three|months|soon|1/.test(q)?"1–3 months":"Just exploring";
+    S.stage="name";upsertLead();
+    return botSay([`Got it. So our agent can attend to you properly, may I have your name?`]);
+  }
+  if(/^(hi|hello|hey|good (morning|afternoon|evening)|hy|howdy)\b/.test(q)&&S.stage==="start"){
+    return botSay([welcome()],OPEN_CHIPS);
+  }
+  if(/document|title|c of o|cofo|consent|deed|genuine|legit/.test(q)){
+    const l=S.interest||LISTINGS[0];
+    return botSay([`The <b>${esc(l.title)}</b> comes with <b>${esc(l.doc)}</b>. Our lawyer shares copies before any payment, and you're welcome to verify them independently.`],["Payment plan details","Book inspection"]);
+  }
+  if(/payment|plan|installment|instalment|spread/.test(q)){
+    const l=S.interest||LISTINGS[0];
+    return botSay([`Payment plan for the <b>${esc(l.title)}</b> (${esc(l.area)}):\n${esc(l.plan)}.\nTitle: ${esc(l.doc)}.\n\nWould you like to book an inspection?`],["Book inspection","See other properties"]);
+  }
+  if(/book|inspect|visit|view|see it/.test(q)&&!/\d\s*-?\s*bed/.test(q)){
+    if(!S.interest)S.interest=LISTINGS[0];
+    if(!S.name){S.stage="name";upsertLead();return botSay([`Happy to book that. May I have your name first?`]);}
+    S.stage="slot";return botSay([`Here are the available inspection slots:`],SLOTS);
+  }
+  if(/other|more|else|show me/.test(q)&&S.stage==="done"){
+    [LISTINGS[2],LISTINGS[4]].forEach(l=>asks[l.id]++);render();
+    return botSay([`Here's what else is available right now:`,LISTINGS[2],LISTINGS[4],`Tell me a location, budget or number of bedrooms and I'll narrow it down.`]);
+  }
+  const res=search(q);
+  if(res.specific&&res.r.length){
+    res.r.forEach(l=>asks[l.id]=(asks[l.id]||0)+1);
+    S.interest=res.r[0];
+    const intro=res.over?`Nothing available at that exact budget right now. This is the closest match:`:`Here ${res.r.length>1?"are "+res.r.length+" options that match":"is an option that matches"}:`;
+    upsertLead();log("💬",`Enquiry answered in 2 seconds: ${res.r[0].title}`);
+    if(S.stage==="start"||S.stage==="done"){S.stage="timeline";return botSay([intro,...res.r,`When are you looking to ${S.interest.type==="rent"?"move in":"buy"}?`],["This month","In 1–3 months","Just exploring"]);}
+    return botSay([intro,...res.r]);
+  }
+  handoff(t);render();
+  return botSay([`Good question. I've passed it to one of our agents, who will reply here shortly.\n\nMeanwhile, I can show you properties by location, budget or bedrooms. For example: "3-bed in Ajah under ₦100M".`],OPEN_CHIPS.slice(0,2).concat("Payment plan details"));
+}
+function send(t){t=String(t).trim();if(!t)return;addMsg(esc(t),"out");input.value="";reply(t)}
+$("#compose").addEventListener("submit",e=>{e.preventDefault();if(!playing)send(input.value)});
+
+/* ---------- auto-play walkthrough ---------- */
+const SCRIPT=[
+ {say:"Good evening, do you have a 4 bedroom in Lekki under 200m?",wait:2600},
+ {say:"This month",wait:2200},
+ {say:"Chioma Adeyemi",wait:2200},
+ {say:"Sat, 10:00am",wait:2600,then:"alerts"},
+ {say:"What documents does it have?",wait:2400},
+ {say:"Payment plan details",wait:2600,then:"sheet"}
+];
+function autoplay(){
+  if(playing)return;start(true);playing=true;$("#autoplay").disabled=true;$("#autoplay").textContent="Playing…";input.disabled=true;
+  if(window.matchMedia("(max-width:960px)").matches)setView("chat");else setView("dash");
+  let i=0;
+  const step=()=>{
+    if(!playing)return;
+    if(i>=SCRIPT.length){playing=false;$("#autoplay").disabled=false;$("#autoplay").textContent="▶ Watch it work";input.disabled=false;
+      addSys("Demo finished. Try typing your own question, or open the tabs above.");setChips(OPEN_CHIPS.slice(0,2).concat("See other properties"));
+      if(window.matchMedia("(max-width:960px)").matches)setTimeout(()=>setView("sheet"),1200);return;}
+    const s=SCRIPT[i++];typeInto(s.say,()=>{send(s.say);
+      if(s.then&&!window.matchMedia("(max-width:960px)").matches)setTimeout(()=>setView(s.then),1300);
+      setTimeout(step,s.wait)});
+  };
+  setTimeout(step,1600);
+}
+function typeInto(text,done){let k=0;input.value="";const iv=setInterval(()=>{input.value=text.slice(0,++k);if(k>=text.length){clearInterval(iv);setTimeout(done,250)}},matchMedia("(prefers-reduced-motion:reduce)").matches?1:28)}
+function addSys(t){const d=document.createElement("div");d.className="sysnote";d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight}
+
+/* ---------- views ---------- */
+function setView(v){
+  view=v;app.dataset.view=v;
+  const rv=v==="chat"?"dash":v;
+  $$(".view").forEach(el=>el.classList.toggle("active",el.dataset.viewId===rv));
+  $$(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.v===v||(v==="chat"&&t.dataset.v==="dash"&&!window.matchMedia("(max-width:960px)").matches))));
+  if(v!=="chat")unseen=0;render();
+}
+$$(".tab").forEach(t=>t.addEventListener("click",()=>setView(t.dataset.v)));
+
+function start(silent){
+  playing=false;$("#autoplay").disabled=false;$("#autoplay").textContent="▶ Watch it work";input.disabled=false;
+  msgs.innerHTML='<span class="daytag">Today</span><div class="sysnote">Preview with sample listings. Chat as a buyer would.</div>';
+  seed();render();
+  if(!silent)botSay([welcome()],OPEN_CHIPS);
+}
+$("#reset").onclick=()=>start();
+$("#autoplay").onclick=autoplay;
+window.addEventListener("hashchange",()=>{readBrand();start()});
+readBrand();
+setView(window.matchMedia("(max-width:960px)").matches?"chat":"dash");
+start();
+})();
+</script>
