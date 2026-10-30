@@ -1,3 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Live demo of an AI sales assistant for real estate businesses, by AE Intelligence.">
+<meta property="og:title" content="AI Sales Assistant Demo by AE Intelligence">
+<meta property="og:description" content="See how buyer enquiries on WhatsApp, Instagram and Facebook get answered, scored and recorded automatically.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}html{-webkit-text-size-adjust:100%}</style>
 <title>Lekki Prime Sales Assistant</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -174,7 +183,15 @@ tr.new td{animation:flash 1.8s ease-out}
 @media (max-width:960px){
   .mob-only{display:inline-flex}
   .grid{grid-template-columns:minmax(0,1fr)}
-  .phone{position:static;height:640px;max-height:none}
+  .phone{position:static;height:calc(100svh - 150px);min-height:480px;max-height:none;border-radius:20px}
+  h1{font-size:21px}
+  .sub{display:none}
+  header.top{align-items:center}
+  .actions{width:100%}
+  .actions .btn{flex:1}
+  .bubble{font-size:15px}
+  .kpi .n{font-size:22px}
+  .panel{padding:14px}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .two,.checks{grid-template-columns:minmax(0,1fr)}
   .flow{grid-template-columns:minmax(0,1fr)}
@@ -183,6 +200,9 @@ tr.new td{animation:flash 1.8s ease-out}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+</head>
+<body>
+
 
 <div class="wrap" id="app" data-view="chat">
   <header class="top">
@@ -370,9 +390,10 @@ function seed(){
   leads=[
    {id:"x1",name:"Mrs. Adaeze O.",phone:"0803 *** 4412",channel:"WhatsApp",interest:"4-Bed Semi-Detached, Chevron",budget:"₦200M",timeline:"This month",score:"hot",status:"Inspection booked",next:"Inspection Sat 10:00am",agent:AGENTS[0],time:"09:12",ex:true},
    {id:"x2",name:"Tunde B.",phone:"0816 *** 2290",channel:"Instagram",interest:"3-Bed Terrace, Ajah",budget:"₦100M",timeline:"1–3 months",score:"warm",status:"Follow-up scheduled",next:"Follow-up tomorrow",agent:AGENTS[1],time:"10:47",ex:true},
-   {id:"x3",name:"David A. (London)",phone:"+44 *** 7731",channel:"WhatsApp",interest:"Land, Ibeju-Lekki",budget:"₦20M",timeline:"Just exploring",score:"cold",status:"Nurture list",next:"New listings in 7 days",agent:AGENTS[1],time:"02:31",ex:true},
+   {id:"x3",name:"David A. (London)",phone:"+44 *** 7731",channel:"WhatsApp",interest:"Land, Ibeju-Lekki",budget:"₦20M",timeline:"Just exploring",score:"cold",ah:true,status:"Nurture list",next:"New listings in 7 days",agent:AGENTS[1],time:"02:31",ex:true},
    {id:"x4",name:"Kemi F.",phone:"0706 *** 5108",channel:"Facebook",interest:"2-Bed Apartment, Lekki Phase 1",budget:"₦120M",timeline:"1–3 months",score:"warm",status:"Details sent",next:"Follow-up in 2 days",agent:AGENTS[0],time:"11:05",ex:true}
   ];
+  leads.sort((a,b)=>b.time.localeCompare(a.time));
   asks={chv4:3,ajh3:2,ikb:2,lp12:2,ikt5:1,iky4:0,ikr3:1};
   feed=[
    {ic:"🔥",t:"Hot-lead alert sent to Femi: Mrs. Adaeze O., ₦200M budget",time:"09:13",ex:true},
@@ -380,7 +401,7 @@ function seed(){
    {ic:"📷",t:"Instagram DM answered and logged: Tunde B.",time:"10:47",ex:true}
   ];
   alerts=[
-   {type:"hot",agent:AGENTS[0],time:"09:13",ex:true,text:"🔥 <b>HOT LEAD</b>\n<b>Mrs. Adaeze O.</b> · 0803 *** 4412\nWants: 4-Bed Semi-Detached, Chevron\nBudget: ₦200M · Buying: this month\nInspection: Sat 10:00am\n\nCall her within 30 minutes. Full chat is in the sheet, row 2."},
+   {type:"hot",agent:AGENTS[0],time:"09:13",ex:true,text:"🔥 <b>HOT LEAD</b>\n<b>Mrs. Adaeze O.</b> · 0803 *** 4412\nWants: 4-Bed Semi-Detached, Chevron\nBudget: ₦200M · Buying: this month\nInspection: Sat 10:00am\n\nCall her within 30 minutes. Full chat is in the sheet, row 3."},
    {type:"handoff",agent:AGENTS[1],time:"10:52",ex:true,text:"🙋 <b>NEEDS A PERSON</b>\n<b>Tunde B.</b> (Instagram) asked: \"Can I pay part in dollars?\"\nThe assistant told him an agent will reply shortly. Tap to open the chat."}
   ];
   unseen=0;
@@ -429,7 +450,7 @@ function score(){
   return p>=4?"hot":p>=2?"warm":"cold";
 }
 function upsertLead(){
-  if(!S.leadId){S.leadId="l"+Date.now();leads.unshift({id:S.leadId,fresh:true,time:now(),channel:"WhatsApp",phone:S.phone,agent:AGENTS[leads.length%2]});}
+  if(!S.leadId){S.leadId="l"+Date.now();const h=new Date().getHours();leads.unshift({id:S.leadId,fresh:true,time:now(),ah:h<8||h>=18,channel:"WhatsApp",phone:S.phone,agent:AGENTS[leads.length%2]});}
   const L=leads.find(l=>l.id===S.leadId);
   L.name=S.name||"New buyer";L.interest=S.interest?S.interest.title+", "+S.interest.area.split(",")[0]:"Browsing";
   L.budget=S.budget?fmt(S.budget):"–";L.timeline=S.timeline||"–";L.score=score();
@@ -470,6 +491,7 @@ function followUps(){
   return out;
 }
 function render(){
+  if(!leads)return;
   const hot=leads.filter(l=>l.score==="hot").length,insp=leads.filter(l=>/Inspection/.test(l.next)).length;
   $("#kEnq").textContent=leads.length;$("#kHot").textContent=hot;$("#kInsp").textContent=insp;
   const pill=s=>`<span class="pill ${s}">${s==="hot"?"🔥 Hot":s==="warm"?"Warm":"Cold"}</span>`;
@@ -499,7 +521,7 @@ function render(){
 <b>Enquiries:</b> ${leads.length} (WhatsApp ${ch.WhatsApp}, Instagram ${ch.Instagram}, Facebook ${ch.Facebook})
 <b>Hot leads:</b> ${hot} (${esc(hotNames)})
 <b>Inspections booked:</b> ${insp}
-<b>Replied after hours:</b> ${leads.filter(l=>/^0[0-6]|^2[0-3]/.test(l.time)).length}
+<b>Replied after hours:</b> ${leads.filter(l=>l.ah).length}
 <b>Average reply time:</b> 2 seconds
 
 <b>Most asked about:</b>
@@ -537,7 +559,7 @@ function reply(t){
     S.stage="name";upsertLead();
     return botSay([`Got it. So our agent can attend to you properly, may I have your name?`]);
   }
-  if(/^(hi|hello|hey|good (morning|afternoon|evening)|hy|howdy)\b/.test(q)&&S.stage==="start"){
+  if(/^(hi|hello|hey|good (morning|afternoon|evening)|hy|howdy)\b/.test(q)&&S.stage==="start"&&!/\d|bed|land|plot|rent|lekki|ajah|ikoyi|ibeju|chevron|ikate/.test(q)){
     return botSay([welcome()],OPEN_CHIPS);
   }
   if(/document|title|c of o|cofo|consent|deed|genuine|legit/.test(q)){
@@ -582,7 +604,7 @@ const SCRIPT=[
  {say:"Payment plan details",wait:2600,then:"sheet"}
 ];
 function autoplay(){
-  if(playing)return;start(true);playing=true;$("#autoplay").disabled=true;$("#autoplay").textContent="Playing…";input.disabled=true;
+  if(playing)return;start();playing=true;$("#autoplay").disabled=true;$("#autoplay").textContent="Playing…";input.disabled=true;
   if(window.matchMedia("(max-width:960px)").matches)setView("chat");else setView("dash");
   let i=0;
   const step=()=>{
@@ -623,3 +645,6 @@ setView(window.matchMedia("(max-width:960px)").matches?"chat":"dash");
 start();
 })();
 </script>
+
+</body>
+</html>
