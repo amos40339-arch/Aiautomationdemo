@@ -3,646 +3,730 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Live demo of an AI sales assistant for real estate businesses, by AE Intelligence.">
+<meta name="description" content="Live demo: an AI assistant that answers WhatsApp enquiries, logs them to Google Sheets, alerts the owner and follows up. By AE Intelligence.">
 <meta property="og:title" content="AI Sales Assistant Demo by AE Intelligence">
-<meta property="og:description" content="See how buyer enquiries on WhatsApp, Instagram and Facebook get answered, scored and recorded automatically.">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}html{-webkit-text-size-adjust:100%}</style>
-<title>Lekki Prime Sales Assistant</title>
+<meta property="og:description" content="See how customer enquiries get answered, recorded and followed up automatically, even at night.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}html{-webkit-text-size-adjust:100%}</style>
+<title>AE Intelligence Live Demo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a working sales preview. Buyer's WhatsApp on the left; the owner's side (dashboard, sheet, alerts, follow-ups, report) on the right. One tab bar on phones. */
+/* Layout: the customer's WhatsApp on the left, the business owner's side (overview, sheet, alerts, follow-ups) on the right. The link picks the industry and the company name. */
 :root{
-  --bg:#EEF2F1; --surface:#FFFFFF; --surface-2:#F5F8F7; --line:#D7DFDC;
-  --ink:#0F2622; --muted:#5B6E69; --accent:#17806A; --accent-ink:#FFFFFF; --accent-soft:#DDF1EA;
-  --chat-bg:#E7EDE9; --bubble-in:#FFFFFF; --bubble-out:#D3F2E4;
-  --sheet-head:#F1F3F4; --sheet-line:#E2E5E7; --sheet-green:#188038;
-  --hot:#C2410C; --hot-soft:#FDE7DB; --warm:#A16207; --warm-soft:#FBF0D9; --cold:#64748B; --cold-soft:#E8ECF1;
+  --bg:#EEF1F0; --surface:#FFFFFF; --surface-2:#F5F7F6; --line:#D9E0DD;
+  --ink:#10211E; --muted:#5A6D68; --accent:#0F7B6C; --accent-ink:#FFFFFF; --accent-soft:#DCF0EA;
+  --night:#0D1726; --night-2:#18263C; --moon:#F4D58D;
+  --chat-bg:#E6ECE8; --bubble-in:#FFFFFF; --bubble-out:#D4F3E3;
+  --amber:#B45309; --amber-soft:#FDEBD3; --ok:#15803D; --ok-soft:#DCF2E3; --busy:#475569; --busy-soft:#E2E8F0;
+  --sheet-head:#F1F3F4; --sheet-line:#E1E4E6; --sheet-green:#188038;
   --font-display:"Sora","Segoe UI",system-ui,sans-serif;
   --font-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
   --font-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
-  --radius:14px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0B1311; --surface:#121D1A; --surface-2:#172420; --line:#24342F;
-  --ink:#E4EEEA; --muted:#93A8A1; --accent:#3BB894; --accent-ink:#06120F; --accent-soft:#163A30;
-  --chat-bg:#0F1A17; --bubble-in:#1A2824; --bubble-out:#174536;
-  --sheet-head:#1A2522; --sheet-line:#26332F; --sheet-green:#4CC27A;
-  --hot:#FB8A5B; --hot-soft:#3A1D10; --warm:#E6B455; --warm-soft:#33280F; --cold:#9AA8BA; --cold-soft:#1E2630;
-  color-scheme:dark}}
+  --bg:#0A1210; --surface:#111C19; --surface-2:#16231F; --line:#23332E;
+  --ink:#E3EDE9; --muted:#92A7A0; --accent:#35B79D; --accent-ink:#04120E; --accent-soft:#143A31;
+  --night:#060C16; --night-2:#101B2E; --moon:#F4D58D;
+  --chat-bg:#0E1916; --bubble-in:#192723; --bubble-out:#164434;
+  --amber:#F0A54A; --amber-soft:#3A2710; --ok:#4ADE80; --ok-soft:#12301C; --busy:#A6B2C4; --busy-soft:#1E2733;
+  --sheet-head:#18231F; --sheet-line:#25332E; --sheet-green:#4CC27A; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0B1311; --surface:#121D1A; --surface-2:#172420; --line:#24342F;
-  --ink:#E4EEEA; --muted:#93A8A1; --accent:#3BB894; --accent-ink:#06120F; --accent-soft:#163A30;
-  --chat-bg:#0F1A17; --bubble-in:#1A2824; --bubble-out:#174536;
-  --sheet-head:#1A2522; --sheet-line:#26332F; --sheet-green:#4CC27A;
-  --hot:#FB8A5B; --hot-soft:#3A1D10; --warm:#E6B455; --warm-soft:#33280F; --cold:#9AA8BA; --cold-soft:#1E2630;
-  color-scheme:dark}
+  --bg:#0A1210; --surface:#111C19; --surface-2:#16231F; --line:#23332E;
+  --ink:#E3EDE9; --muted:#92A7A0; --accent:#35B79D; --accent-ink:#04120E; --accent-soft:#143A31;
+  --night:#060C16; --night-2:#101B2E; --moon:#F4D58D;
+  --chat-bg:#0E1916; --bubble-in:#192723; --bubble-out:#164434;
+  --amber:#F0A54A; --amber-soft:#3A2710; --ok:#4ADE80; --ok-soft:#12301C; --busy:#A6B2C4; --busy-soft:#1E2733;
+  --sheet-head:#18231F; --sheet-line:#25332E; --sheet-green:#4CC27A; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
-.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
-.brand{display:flex;flex-direction:column;gap:3px;min-width:0}
-.eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-h1{font-family:var(--font-display);font-size:clamp(22px,3vw,30px);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
-.sub{color:var(--muted);margin:0;max-width:66ch}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 36px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;flex-direction:column;gap:2px;min-width:0}
+.eyebrow{font:500 11.5px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:700 clamp(21px,2.6vw,28px)/1.15 var(--font-display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.right-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.clock{display:inline-flex;align-items:center;gap:10px;background:var(--night);color:#fff;border-radius:999px;padding:7px 16px 7px 10px}
+.clock .moon{width:22px;height:22px;border-radius:50%;background:var(--moon);box-shadow:inset -6px -3px 0 0 var(--night-2)}
+.clock .moon.sun{background:#F6B73C;box-shadow:0 0 0 3px rgba(246,183,60,.3)}
+.clock b{font:600 17px var(--font-mono);font-variant-numeric:tabular-nums}
+.clock small{font-size:12px;opacity:.75}
 .btn{font:600 13.5px var(--font-body);border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 15px;cursor:pointer}
-.btn:hover{border-color:var(--accent)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn:disabled{opacity:.55;cursor:default}
-.btn:focus-visible,.chip:focus-visible,.send:focus-visible,.tab:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.caption{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:500;min-height:46px}
+.caption .step{font:600 11.5px var(--font-mono);background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.caption span:last-child{min-width:0}
 
-.tabbar{overflow-x:auto;scrollbar-width:none}
-.tabbar::-webkit-scrollbar{display:none}
-.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;width:max-content;min-width:100%}
-.tab{flex:1;white-space:nowrap;border:0;background:transparent;color:var(--muted);font:600 13.5px var(--font-body);padding:8px 13px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;justify-content:center}
-.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
-.tab .dot{min-width:18px;padding:0 5px;border-radius:999px;background:var(--hot);color:#fff;font-size:11px;line-height:18px}
-.mob-only{display:none}
-.grid{display:grid;grid-template-columns:390px minmax(0,1fr);gap:18px;align-items:start}
+.stage{display:grid;grid-template-columns:380px minmax(0,1fr);gap:16px;align-items:start}
 
-/* Phone */
-.phone{background:var(--surface);border:1px solid var(--line);border-radius:28px;overflow:hidden;display:flex;flex-direction:column;height:740px;max-height:calc(100vh - 32px);position:sticky;top:16px}
-.chat-head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--accent);color:var(--accent-ink)}
-.avatar{width:38px;height:38px;border-radius:50%;background:var(--accent-ink);color:var(--accent);display:grid;place-items:center;font:700 14px var(--font-display);flex:none}
-.chat-head b{font-family:var(--font-display);font-weight:600;font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* phone */
+.phone{background:var(--surface);border:1px solid var(--line);border-radius:28px;overflow:hidden;display:flex;flex-direction:column;height:700px;max-height:calc(100vh - 24px);position:sticky;top:12px}
+.chat-head{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#075E54;color:#fff}
+.avatar{width:38px;height:38px;border-radius:50%;background:#fff;color:#075E54;display:grid;place-items:center;font:700 14px var(--font-display);flex:none}
+.chat-head b{font:600 15px var(--font-display);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chat-head small{opacity:.85;font-size:12px}
 .chat-head > div:nth-child(2){min-width:0}
-.msgs{flex:1;overflow-y:auto;background:var(--chat-bg);padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+.msgs > *{flex-shrink:0}
+.msgs{flex:1;overflow-y:auto;background:var(--chat-bg);padding:12px 10px;display:flex;flex-direction:column;gap:7px}
 .daytag{align-self:center;font:500 11.5px var(--font-mono);color:var(--muted);background:var(--surface);border-radius:8px;padding:3px 9px}
-.sysnote{align-self:center;text-align:center;font-size:11.5px;color:var(--muted);background:var(--surface);border-radius:8px;padding:4px 10px;max-width:90%}
-.bubble{max-width:84%;padding:8px 10px 6px;border-radius:12px;font-size:14.5px;white-space:pre-line;box-shadow:0 1px 0 rgba(0,0,0,.06);min-width:0;overflow-wrap:anywhere}
+.sys{align-self:center;text-align:center;font:500 12px var(--font-body);color:var(--muted);background:var(--surface);border-radius:8px;padding:4px 10px;max-width:92%}
+.bubble{max-width:86%;padding:7px 10px 5px;border-radius:12px;font-size:14px;white-space:pre-line;box-shadow:0 1px 0 rgba(0,0,0,.06);overflow-wrap:anywhere}
 .bubble.in{align-self:flex-start;background:var(--bubble-in);border-top-left-radius:4px}
 .bubble.out{align-self:flex-end;background:var(--bubble-out);border-top-right-radius:4px}
-.bubble time{display:block;text-align:right;font:400 10.5px var(--font-mono);color:var(--muted);margin-top:3px}
+.bubble time{display:block;text-align:right;font:400 10.5px var(--font-mono);color:var(--muted);margin-top:2px}
 .bubble b{font-weight:600}
 .typing{align-self:flex-start;background:var(--bubble-in);border-radius:12px;padding:10px 14px;display:flex;gap:4px}
-.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bob 1s infinite}
-.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
-@keyframes bob{0%,60%,100%{opacity:.3;transform:none}30%{opacity:1;transform:translateY(-3px)}}
-.listing{align-self:flex-start;width:84%;background:var(--bubble-in);border-radius:12px;overflow:hidden;font-size:13.5px}
-.listing .ph{height:70px;background:linear-gradient(135deg,var(--accent-soft),var(--surface-2));display:flex;align-items:flex-end;justify-content:space-between;padding:8px 10px;font:600 11px var(--font-mono);color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
-.listing .bd{padding:8px 10px;display:flex;flex-direction:column;gap:2px}
-.listing .bd strong{font-family:var(--font-display);font-size:14px;font-weight:600}
-.listing .price{font:600 14px var(--font-mono);color:var(--accent)}
-.listing .meta{color:var(--muted);font-size:12.5px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px 0;background:var(--chat-bg)}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.3}
+.typing i.on{opacity:1}
+.apt{align-self:flex-start;width:88%;background:var(--bubble-in);border-radius:12px;overflow:hidden;font-size:13px}
+.apt .pics{display:grid;grid-template-columns:1.3fr 1fr;gap:2px;height:104px}
+.apt .pics svg{width:100%;height:100%;display:block}
+.apt .bd{padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.apt strong{font:600 14px var(--font-display)}
+.apt .area{color:var(--muted);font-size:12.5px}
+.apt .price{font:600 14px var(--font-mono);color:var(--accent)}
+.apt .price small{font:400 12px var(--font-body);color:var(--muted)}
+.amen{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.amen span{font-size:11.5px;background:var(--surface-2);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.summary{align-self:flex-start;width:88%;background:var(--bubble-in);border-radius:12px;padding:10px 12px;font-size:13.5px;border-left:4px solid var(--accent)}
+.summary b{font:600 14px var(--font-display);display:block;margin-bottom:4px}
+.summary dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0}
+.summary dt{color:var(--muted)}
+.summary dd{margin:0;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 0;background:var(--chat-bg)}
 .chip{border:1px solid var(--accent);background:var(--surface);color:var(--accent);border-radius:999px;padding:6px 11px;font:500 13px var(--font-body);cursor:pointer}
-.chip:hover{background:var(--accent-soft)}
-form.compose{display:flex;gap:8px;padding:10px 12px 12px;background:var(--chat-bg)}
+form.compose{display:flex;gap:8px;padding:9px 10px 11px;background:var(--chat-bg)}
 form.compose input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:10px 14px;font:400 14.5px var(--font-body)}
-.send{width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);cursor:pointer;font-size:17px;flex:none}
+.send{width:42px;height:42px;border-radius:50%;border:0;background:#128C7E;color:#fff;cursor:pointer;font-size:16px;flex:none}
 
-/* Right side */
-.right{display:flex;flex-direction:column;gap:14px;min-width:0}
-.view{display:none;flex-direction:column;gap:14px;min-width:0}
+/* host side */
+.host{display:flex;flex-direction:column;gap:12px;min-width:0}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;white-space:nowrap;border:0;background:transparent;color:var(--muted);font:600 13.5px var(--font-body);padding:8px 12px;border-radius:999px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--surface)}
+.tab .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#E11D48;margin-left:6px;vertical-align:middle}
+.view{display:none;flex-direction:column;gap:12px;min-width:0}
 .view.active{display:flex}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;min-width:0}
-.panel h2{font-family:var(--font-display);font-size:15.5px;font-weight:600;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.panel h2{font:600 15px var(--font-display);margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .panel h2 span{font:400 12px var(--font-mono);color:var(--muted)}
-.lead-in{margin:0 0 4px;color:var(--muted);font-size:13.5px;max-width:70ch}
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
-.kpi .n{font:600 26px var(--font-display);font-variant-numeric:tabular-nums}
+.lead{margin:0;color:var(--muted);font-size:13.5px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
+.kpi .n{font:600 24px var(--font-display);font-variant-numeric:tabular-nums}
 .kpi .l{font-size:12.5px;color:var(--muted)}
-.kpi.hot .n{color:var(--hot)}
-.tablebox{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-.dash table{min-width:640px}
-th{text-align:left;font:500 11.5px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
-td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
-tr.new td{animation:flash 1.8s ease-out}
-@keyframes flash{from{background:var(--accent-soft)}to{background:transparent}}
-.pill{display:inline-block;font:600 11.5px var(--font-body);border-radius:999px;padding:2px 9px;white-space:nowrap}
-.pill.hot{background:var(--hot-soft);color:var(--hot)}
-.pill.warm{background:var(--warm-soft);color:var(--warm)}
-.pill.cold{background:var(--cold-soft);color:var(--cold)}
-.pill.ok{background:var(--accent-soft);color:var(--accent)}
-.ch{font:500 11.5px var(--font-mono);white-space:nowrap}
-.ex{font:500 10px var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:5px;white-space:nowrap}
-.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
-.bars{display:flex;flex-direction:column;gap:9px}
-.bar{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:8px;align-items:center;font-size:13px}
-.bar .tr{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-top:4px}
-.bar .fl{height:100%;background:var(--accent);border-radius:99px;transition:width .5s}
-.bar .c{font:500 13px var(--font-mono);text-align:right}
-.chan{display:flex;flex-direction:column;gap:9px}
-.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:13.5px}
-.feed li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start}
+.cal{display:grid;grid-template-columns:150px repeat(17,minmax(0,1fr));gap:3px;align-items:center;font-size:12px}
+.cal .h{font:500 10.5px var(--font-mono);color:var(--muted);text-align:center}
+.cal .name{font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .d{height:26px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line)}
+.cal .d.booked{background:var(--busy-soft);border-color:transparent;background-image:repeating-linear-gradient(45deg,transparent 0 4px,rgba(100,116,139,.25) 4px 6px)}
+.cal .d.req{background:var(--amber-soft);border-color:var(--amber)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line);background:var(--surface-2)}
+.legend i.booked{background:var(--busy-soft)}
+.legend i.req{background:var(--amber-soft);border-color:var(--amber)}
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:13.5px}
+.feed li{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:9px;align-items:start}
 .feed .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:13px;background:var(--surface-2)}
-.feed time{display:block;font:400 11px var(--font-mono);color:var(--muted)}
-.note{font-size:12.5px;color:var(--muted);margin:0}
+.feed time{font:400 11.5px var(--font-mono);color:var(--muted);white-space:nowrap}
+.ex{font:500 10px var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:5px;white-space:nowrap}
+.pill{display:inline-block;font:600 11.5px var(--font-body);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.amber{background:var(--amber-soft);color:var(--amber)}
+.pill.grey{background:var(--busy-soft);color:var(--busy)}
 
-/* Sheet */
 .sheet{border:1px solid var(--sheet-line);border-radius:10px;overflow:hidden;background:var(--surface)}
 .sheet-bar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--sheet-line);flex-wrap:wrap}
-.sheet-ic{width:22px;height:28px;border-radius:3px;background:var(--sheet-green);position:relative;flex:none}
-.sheet-ic::after{content:"";position:absolute;inset:9px 5px 6px;border:2px solid #fff;border-radius:1px}
+.sheet-ic{width:20px;height:26px;border-radius:3px;background:var(--sheet-green);position:relative;flex:none}
+.sheet-ic::after{content:"";position:absolute;inset:8px 4px 5px;border:2px solid #fff;border-radius:1px}
 .sheet-bar b{font-weight:600;font-size:14px}
 .sheet-bar small{color:var(--muted);font:400 11.5px var(--font-mono);margin-left:auto}
 .sheet-scroll{overflow-x:auto}
-.sheet table{font-size:12.5px;min-width:1040px;border-collapse:collapse}
-.sheet th,.sheet td{border:1px solid var(--sheet-line);padding:5px 8px;white-space:nowrap;text-transform:none;letter-spacing:0}
+.sheet table{border-collapse:collapse;font-size:12.5px;min-width:880px;width:100%}
+.sheet th,.sheet td{border:1px solid var(--sheet-line);padding:6px 8px;white-space:nowrap;text-align:left}
 .sheet thead th{background:var(--sheet-head);color:var(--muted);font:500 11px var(--font-mono);text-align:center}
-.sheet tbody th{background:var(--sheet-head);color:var(--muted);font:500 11px var(--font-mono);text-align:center;width:34px}
-.sheet tr.hdr td{background:var(--accent-soft);font-weight:600;color:var(--ink)}
-.sheet td.s-hot{background:var(--hot-soft);color:var(--hot);font-weight:600}
-.sheet td.s-warm{background:var(--warm-soft);color:var(--warm);font-weight:600}
-.sheet td.s-cold{background:var(--cold-soft);color:var(--cold);font-weight:600}
+.sheet tbody th{background:var(--sheet-head);color:var(--muted);font:500 11px var(--font-mono);text-align:center;width:30px}
+.sheet tr.hdr td{background:var(--accent-soft);font-weight:600}
+.sheet tr.hl td{background:var(--amber-soft)}
+.sheet td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .sheet-tabs{display:flex;gap:2px;padding:6px 10px;background:var(--sheet-head);border-top:1px solid var(--sheet-line);font-size:12px;overflow-x:auto}
 .sheet-tabs span{padding:3px 10px;border-radius:4px;color:var(--muted);white-space:nowrap}
 .sheet-tabs span.on{background:var(--surface);color:var(--sheet-green);font-weight:600}
 
-/* WhatsApp-style message cards (alerts, report) */
-.wa-list{display:flex;flex-direction:column;gap:12px}
-.wa{background:var(--chat-bg);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px}
-.wa-from{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
-.wa-from .avatar{width:26px;height:26px;font-size:10px;background:var(--accent);color:var(--accent-ink)}
+.walist{display:flex;flex-direction:column;gap:10px}
+.wa{background:var(--chat-bg);border-radius:14px;padding:11px;display:flex;flex-direction:column;gap:6px}
+.wa-from{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.wa-from .avatar{width:24px;height:24px;font-size:10px;background:#075E54;color:#fff}
 .wa .bubble{max-width:100%;align-self:stretch}
-.wa .bubble.hotb{border-left:4px solid var(--hot)}
-.empty{padding:18px;text-align:center;color:var(--muted);font-size:13.5px;background:var(--surface-2);border-radius:12px}
+.wa .bubble.alert{border-left:4px solid #E11D48}
+.wa .bubble.money{border-left:4px solid var(--ok)}
+.wa.new{outline:2px solid var(--amber);outline-offset:2px}
+.empty{padding:16px;text-align:center;color:var(--muted);font-size:13.5px;background:var(--surface-2);border-radius:12px}
+table.plain{width:100%;border-collapse:collapse;font-size:13.5px;min-width:600px}
+table.plain th{text-align:left;font:500 11px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+table.plain td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl{overflow-x:auto}
+.note{font-size:12.5px;color:var(--muted);margin:0}
 
-/* How it works */
-.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;counter-reset:s}
-.step{background:var(--surface-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;position:relative}
-.step .k{font:600 11px var(--font-mono);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
-.step b{font-family:var(--font-display);font-weight:600;font-size:14px}
-.step p{margin:0;font-size:12.5px;color:var(--muted)}
-.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin:0;padding:0;list-style:none;font-size:13.5px}
-.checks li{display:flex;gap:8px}
-.checks li::before{content:"✓";color:var(--accent);font-weight:700}
+/* overlay */
+.overlay{position:fixed;inset:0;z-index:50;background:var(--night);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.overlay[hidden]{display:none}
+.ov{display:flex;flex-direction:column;align-items:center;gap:14px;max-width:760px}
+.ov .t{font:700 clamp(54px,9vw,112px)/1 var(--font-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ov .t small{font-size:.32em;font-weight:500;letter-spacing:0;opacity:.7;display:block;margin-top:10px}
+.ov p{font-size:clamp(17px,2vw,22px);margin:0;color:#D6DEEA;max-width:34ch;text-wrap:balance}
+.ov .moonbig{width:64px;height:64px;border-radius:50%;background:var(--moon);box-shadow:inset -18px -8px 0 0 var(--night-2)}
+.ov .sunbig{width:64px;height:64px;border-radius:50%;background:#F6B73C;box-shadow:0 0 0 10px rgba(246,183,60,.18)}
+.ov ul{list-style:none;padding:0;margin:4px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px 28px;text-align:left;font-size:clamp(15px,1.7vw,19px)}
+.ov ul li::before{content:"✓  ";color:#5EEAD4;font-weight:700}
+.ov .by{font:500 13px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:#93A4BE}
+.ov h2{font:700 clamp(30px,4.4vw,52px)/1.08 var(--font-display);margin:0;letter-spacing:-.02em;text-wrap:balance}
+.ov .cta{font:600 18px var(--font-body);background:#5EEAD4;color:#04201B;border-radius:999px;padding:10px 22px}
 
-.toast{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:330px;background:var(--surface);border:1px solid var(--hot);border-left:5px solid var(--hot);border-radius:12px;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.18);font-size:13.5px;z-index:20;transform:translateY(150%);transition:transform .35s}
-.toast.show{transform:none}
-.toast b{display:block;font-family:var(--font-display);color:var(--hot);margin-bottom:2px}
+.toast{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:340px;background:var(--surface);border:1px solid #E11D48;border-left:5px solid #E11D48;border-radius:12px;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.18);font-size:13.5px;z-index:20}
+.toast[hidden]{display:none}
+.toast b{display:block;font-family:var(--font-display);color:#E11D48;margin-bottom:2px}
+
+/* film mode: fixed 1440x810 canvas, no motion from CSS (the script drives everything) */
+html.film body{padding:16px 22px;height:720px;overflow:hidden}
+html.film .wrap{max-width:none}
+html.film .phone{height:566px;max-height:none;position:static}
+html.film .actions,html.film .chips,html.film .ex{display:none}
+html.film .stage{grid-template-columns:360px minmax(0,1fr)}
+html.film .wrap{gap:10px}
+html.film .caption{min-height:40px;padding:8px 12px}
+html.film .lead{display:none}
 
 @media (max-width:960px){
-  .mob-only{display:inline-flex}
-  .grid{grid-template-columns:minmax(0,1fr)}
-  .phone{position:static;height:calc(100svh - 150px);min-height:480px;max-height:none;border-radius:20px}
-  h1{font-size:21px}
-  .sub{display:none}
-  header.top{align-items:center}
-  .actions{width:100%}
-  .actions .btn{flex:1}
-  .bubble{font-size:15px}
-  .kpi .n{font-size:22px}
-  .panel{padding:14px}
+  .stage{grid-template-columns:minmax(0,1fr)}
+  .phone{position:static;height:calc(100svh - 160px);min-height:500px;max-height:none}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .two,.checks{grid-template-columns:minmax(0,1fr)}
-  .flow{grid-template-columns:minmax(0,1fr)}
-  [data-view="chat"] .right{display:none}
-  .wrap:not([data-view="chat"]) .phone{display:none}
+  .cal{grid-template-columns:96px repeat(17,minmax(0,1fr));gap:2px}
+  .cal .h{font-size:9px}
+  .ov ul{grid-template-columns:1fr}
 }
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.item{align-self:flex-start;width:88%;background:var(--bubble-in);border-radius:12px;overflow:hidden;font-size:13px}
+.item .pics{display:grid;grid-template-columns:1.3fr 1fr;gap:2px;height:104px}
+.item .pics svg{width:100%;height:100%;display:block}
+.item .tile{height:104px;display:grid;place-items:center;font-size:52px;line-height:1}
+.item .bd{padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.item strong{font:600 14px var(--font-display)}
+.item .area{color:var(--muted);font-size:12.5px}
+.item .price{font:600 14px var(--font-mono);color:var(--accent)}
+.item .price small{font:400 12px var(--font-body);color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:8px;align-items:center;font-size:13px}
+.bar .tr{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-top:4px}
+.bar .fl{height:100%;background:var(--accent);border-radius:99px}
+.bar .c{font:500 13px var(--font-mono);text-align:right}
+.maker{display:flex;flex-wrap:wrap;align-items:end;gap:10px;background:var(--surface);border:1px dashed var(--accent);border-radius:14px;padding:12px 14px}
+.maker label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.maker select,.maker input{height:40px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);padding:0 10px;font:400 14.5px var(--font-body);min-width:0}
+.maker input{width:220px;max-width:100%}
+.maker code{font:500 12.5px var(--font-mono);background:var(--surface-2);border-radius:8px;padding:9px 10px;overflow-wrap:anywhere;flex:1 1 260px;min-width:0}
+.maker .hint{flex-basis:100%;margin:0;font-size:12.5px;color:var(--muted)}
+html.film .maker{display:none}
 </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="maker" id="maker">
+    <label>Industry<select id="mkNiche"></select></label>
+    <label>Company name<input id="mkName" placeholder="e.g. Bolas Homes"></label>
+    <code id="mkLink"></code>
+    <button class="btn primary" id="mkCopy" type="button">Copy link</button>
+    <p class="hint">Only you see this bar. Links with an industry and a company name open straight into that business's demo, without this bar.</p>
+  </div>
 
-
-<div class="wrap" id="app" data-view="chat">
   <header class="top">
     <div class="brand">
-      <span class="eyebrow">AE Intelligence · Live preview</span>
-      <h1><span class="brandName">Lekki Prime Homes</span> Sales Assistant</h1>
-      <p class="sub">Chat as a buyer, or press “Watch it work”. The owner's side updates live: every enquiry recorded in the sheet, buyers scored, inspections booked, agents alerted, follow-ups scheduled and a daily report sent.</p>
+      <span class="eyebrow" id="eyebrow">AE Intelligence · Live demo</span>
+      <h1><span class="brandName">Company</span> <span id="title">Sales Assistant</span></h1>
     </div>
-    <div class="actions">
-      <button class="btn primary" id="autoplay" type="button">▶ Watch it work</button>
-      <button class="btn" id="reset" type="button">Restart</button>
+    <div class="right-head">
+      <div class="clock" aria-label="Time in the story"><span class="moon" id="sky"></span><b id="clock">11:42 PM</b><small id="clockSub">After hours</small></div>
+      <div class="actions"><button class="btn primary" id="play" type="button">▶ Watch it work</button> <button class="btn" id="reset" type="button">Restart</button></div>
     </div>
   </header>
 
-  <div class="tabbar">
-    <div class="tabs" role="tablist" id="tabs">
-      <button class="tab mob-only" role="tab" data-v="chat" type="button">Buyer chat</button>
-      <button class="tab" role="tab" data-v="dash" type="button">Dashboard<span class="dot" hidden></span></button>
-      <button class="tab" role="tab" data-v="sheet" type="button">Lead sheet</button>
-      <button class="tab" role="tab" data-v="alerts" type="button">Agent alerts</button>
-      <button class="tab" role="tab" data-v="follow" type="button">Follow-ups</button>
-      <button class="tab" role="tab" data-v="report" type="button">Daily report</button>
-      <button class="tab" role="tab" data-v="how" type="button">How it works</button>
-    </div>
-  </div>
+  <div class="caption"><span class="step" id="capStep">Live</span><span id="capText"></span></div>
 
-  <div class="grid">
-    <section class="phone" aria-label="Buyer WhatsApp chat">
-      <div class="chat-head">
-        <div class="avatar" id="initials">LP</div>
-        <div><b class="brandName">Lekki Prime Homes</b><small>Business account · replies instantly, 24/7</small></div>
-      </div>
+  <div class="stage">
+    <section class="phone" aria-label="Customer's WhatsApp chat">
+      <div class="chat-head"><div class="avatar" id="initials">AE</div><div><b class="brandName">Company</b><small>Business account · replies instantly</small></div></div>
       <div class="msgs" id="msgs" aria-live="polite"></div>
       <div class="chips" id="chips"></div>
       <form class="compose" id="compose" autocomplete="off">
-        <input id="msgInput" type="text" placeholder="Type as a buyer…" aria-label="Message">
+        <input id="msgInput" type="text" placeholder="Message as the customer…" aria-label="Message">
         <button class="send" type="submit" aria-label="Send">➤</button>
       </form>
     </section>
 
-    <section class="right" aria-label="Owner side">
-      <!-- Dashboard -->
-      <div class="view dash" data-view-id="dash">
+    <section class="host" aria-label="Business owner's side">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-v="overview" type="button">Overview</button>
+        <button class="tab" role="tab" data-v="sheet" type="button" id="tabSheet">Sheet</button>
+        <button class="tab" role="tab" data-v="alerts" type="button" id="tabAlerts">Alerts<span class="dot" id="alertDot" hidden></span></button>
+        <button class="tab" role="tab" data-v="follow" type="button">Follow-ups</button>
+      </div>
+
+      <div class="view" data-view="overview">
         <div class="kpis">
-          <div class="kpi"><div class="n" id="kEnq">0</div><div class="l">Enquiries today</div></div>
-          <div class="kpi hot"><div class="n" id="kHot">0</div><div class="l">Hot leads</div></div>
-          <div class="kpi"><div class="n" id="kInsp">0</div><div class="l">Inspections booked</div></div>
-          <div class="kpi"><div class="n">2s</div><div class="l">Average reply time</div></div>
+          <div class="kpi"><div class="n" id="kEnq">0</div><div class="l">Enquiries tonight</div></div>
+          <div class="kpi"><div class="n" id="kReq">0</div><div class="l" id="kReqL">Requests</div></div>
+          <div class="kpi"><div class="n" id="kVal">₦0</div><div class="l">Value requested</div></div>
+          <div class="kpi"><div class="n">3s</div><div class="l">Average reply time</div></div>
         </div>
-        <div class="panel">
-          <h2>Today's leads <span>scored automatically</span></h2>
-          <div class="tablebox"><table>
-            <thead><tr><th>Buyer</th><th>Channel</th><th>Interested in</th><th>Budget</th><th>Score</th><th>Next step</th><th>Time</th></tr></thead>
-            <tbody id="dashLeads"></tbody>
-          </table></div>
-        </div>
-        <div class="two">
-          <div class="panel"><h2>Most-asked properties <span>today</span></h2><div class="bars" id="bars"></div></div>
-          <div class="panel"><h2>Where enquiries come from <span>today</span></h2><div class="bars chan" id="chan"></div></div>
-        </div>
+        <div class="panel"><h2>Most asked about <span>today</span></h2><div class="bars" id="bars"></div></div>
         <div class="panel"><h2>Activity <span>logged automatically</span></h2><ul class="feed" id="feed"></ul></div>
       </div>
 
-      <!-- Sheet -->
-      <div class="view" data-view-id="sheet">
-        <p class="lead-in">Every conversation becomes a row in the business's own Google Sheet: no copying from chats, nothing forgotten. Rows below update as you chat.</p>
+      <div class="view" data-view="sheet">
+        <p class="lead" id="sheetLead"></p>
         <div class="sheet">
-          <div class="sheet-bar"><span class="sheet-ic" aria-hidden="true"></span><b id="sheetName">Lekki Prime Homes · Leads</b><small id="sheetSaved">All changes saved</small></div>
-          <div class="sheet-scroll"><table>
-            <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th><th>L</th></tr></thead>
-            <tbody id="sheetBody"></tbody>
-          </table></div>
-          <div class="sheet-tabs"><span class="on">Leads</span><span>Inspections</span><span>Follow-ups</span><span>Daily reports</span></div>
-        </div>
-        <p class="note">Preview of the sheet layout. In a live setup this is a real Google Sheet the owner and agents can open, filter and share.</p>
-      </div>
-
-      <!-- Alerts -->
-      <div class="view" data-view-id="alerts">
-        <p class="lead-in">The moment a serious buyer appears, the assigned agent gets a WhatsApp alert with everything needed to call them. Questions the assistant can't answer are handed to a person with the full chat attached.</p>
-        <div class="wa-list" id="alertsList"></div>
-      </div>
-
-      <!-- Follow-ups -->
-      <div class="view" data-view-id="follow">
-        <p class="lead-in">Most buyers don't decide on the first chat. The assistant follows up on schedule, so nobody who showed interest is forgotten.</p>
-        <div class="panel">
-          <div class="tablebox"><table style="min-width:620px">
-            <thead><tr><th>Buyer</th><th>When</th><th>Message the assistant sends</th><th>Status</th></tr></thead>
-            <tbody id="followBody"></tbody>
-          </table></div>
+          <div class="sheet-bar"><span class="sheet-ic" aria-hidden="true"></span><b><span class="brandName">Company</span> · <span id="sheetName">Requests</span></b><small id="saved">All changes saved</small></div>
+          <div class="sheet-scroll"><table><thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th></tr></thead><tbody id="sheetBody"></tbody></table></div>
+          <div class="sheet-tabs"><span class="on" id="sheetTab">Requests</span><span>Follow-ups</span><span>Customers</span><span>Daily reports</span></div>
         </div>
       </div>
 
-      <!-- Report -->
-      <div class="view" data-view-id="report">
-        <p class="lead-in">Every evening at 7:00pm the owner gets a summary on WhatsApp. The same report is saved in the sheet.</p>
-        <div class="wa" id="reportCard"></div>
+      <div class="view" data-view="alerts">
+        <p class="lead" id="alertLead"></p>
+        <div class="walist" id="alerts"></div>
       </div>
 
-      <!-- How it works -->
-      <div class="view" data-view-id="how">
-        <div class="panel">
-          <h2>How it works</h2>
-          <div class="flow">
-            <div class="step"><span class="k">Step 1</span><b>Buyer messages</b><p>On WhatsApp, Instagram or Facebook, any time of day.</p></div>
-            <div class="step"><span class="k">Step 2</span><b>Instant answer</b><p>Replies from your real listings: prices, locations, payment plans, documents.</p></div>
-            <div class="step"><span class="k">Step 3</span><b>Qualify and score</b><p>Asks budget and timeline in a natural way, then marks the buyer hot, warm or cold.</p></div>
-            <div class="step"><span class="k">Step 4</span><b>Book and alert</b><p>Books inspections and alerts your agent the moment a serious buyer appears.</p></div>
-            <div class="step"><span class="k">Step 5</span><b>Record and follow up</b><p>Saves everything in your Google Sheet, follows up, and sends you a daily report.</p></div>
-          </div>
-        </div>
-        <div class="two">
-          <div class="panel">
-            <h2>What the business gets</h2>
-            <ul class="checks">
-              <li>Replies in seconds, 24/7</li>
-              <li>Every enquiry in one sheet</li>
-              <li>Hot / warm / cold lead scoring</li>
-              <li>Inspection booking and reminders</li>
-              <li>Hot-lead alerts to agents</li>
-              <li>Automatic follow-ups</li>
-              <li>Daily report to the owner</li>
-              <li>Your team can take over any chat</li>
-            </ul>
-          </div>
-          <div class="panel">
-            <h2>What we need from you</h2>
-            <ul class="checks">
-              <li>Your current listings and prices</li>
-              <li>Payment plans and documents</li>
-              <li>Questions buyers ask most</li>
-              <li>Inspection days and times</li>
-              <li>Which agent gets which alerts</li>
-              <li>Your business WhatsApp number</li>
-            </ul>
-          </div>
-        </div>
-        <p class="note">This page is a preview with sample listings. The live system runs on the business's own WhatsApp Business number, writes to its own Google Sheet, and is set up with its real properties. Built by AE Intelligence.</p>
+      <div class="view" data-view="follow">
+        <p class="lead" id="followLead"></p>
+        <div class="panel"><div class="tbl"><table class="plain"><thead><tr><th id="fCust">Customer</th><th>When</th><th>Message</th><th>Status</th></tr></thead><tbody id="followBody"></tbody></table></div></div>
       </div>
     </section>
   </div>
+  <p class="note actions" id="footnote"></p>
 </div>
 
-<div class="toast" id="toast" role="status"><b>🔥 Hot lead: agent alerted</b><span id="toastMsg"></span></div>
+<div class="overlay" id="overlay" hidden><div class="ov" id="ovBody"></div></div>
 
 <script>
 (function(){
-const LISTINGS=[
- {id:"chv4",title:"4-Bed Semi-Detached Duplex + BQ",area:"Chevron, Lekki",loc:["chevron","lekki"],beds:4,type:"house",price:185e6,plan:"40% deposit, balance over 12 months",status:"Available",doc:"Governor's Consent"},
- {id:"ikt5",title:"5-Bed Fully Detached Duplex",area:"Ikate, Lekki",loc:["ikate","lekki"],beds:5,type:"house",price:320e6,plan:"50% deposit, balance over 6 months",status:"Available",doc:"C of O"},
- {id:"ajh3",title:"3-Bed Terrace Duplex",area:"Abraham Adesanya, Ajah",loc:["ajah","abraham adesanya","sangotedo"],beds:3,type:"house",price:95e6,plan:"30% deposit, balance over 18 months",status:"2 units left",doc:"Deed of Assignment"},
- {id:"lp12",title:"2-Bed Serviced Apartment",area:"Lekki Phase 1",loc:["lekki phase 1","phase 1","lekki"],beds:2,type:"apartment",price:120e6,plan:"Outright or 12-month plan",status:"Available",doc:"Governor's Consent"},
- {id:"ikb",title:"500sqm Dry Land",area:"Ibeju-Lekki",loc:["ibeju","ibeju-lekki","ibeju lekki","epe"],beds:0,type:"land",price:18e6,plan:"₦3M deposit, balance over 6 months",status:"Available",doc:"C of O"},
- {id:"iky4",title:"4-Bed Terrace + 2 BQs",area:"Old Ikoyi",loc:["ikoyi"],beds:4,type:"house",price:650e6,plan:"Outright purchase",status:"Off-plan, ready Q3 2027",doc:"C of O"},
- {id:"ikr3",title:"3-Bed Flat for Rent",area:"Ikota, Lekki",loc:["ikota","vgc"],beds:3,type:"rent",price:9e6,plan:"₦9M per year, 1 year upfront",status:"Available Nov 1",doc:"Tenancy agreement"}
-];
-const SLOTS=["Sat, 10:00am","Sat, 2:00pm","Mon, 11:00am"];
-const AGENTS=["Femi (Sales)","Blessing (Sales)"];
+const FILM=/[?&]film=1/.test(location.search);
+if(FILM)document.documentElement.classList.add("film");
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
-const msgs=$("#msgs"),chips=$("#chips"),input=$("#msgInput"),app=$("#app");
-let S,leads,asks,feed,alerts,unseen=0,playing=false,view="chat",brand="Lekki Prime Homes";
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const naira=n=>"₦"+Math.round(n).toLocaleString("en-NG");
+const short=n=>n>=1e9?"₦"+(n/1e9).toFixed(n%1e9?1:0)+"B":n>=1e6?"₦"+(Math.round(n/1e5)/10).toString().replace(/\.0$/,"")+"M":naira(n);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const first=n=>{const w=String(n||"there").trim().split(/\s+/);return /^(mr|mrs|ms|miss|dr|chief|pastor)\.?$/i.test(w[0])&&w.length>1?w[0].replace(/\.?$/,".")+" "+w[w.length-1]:w[0]};
 
-/* ---------- brand from link (#Sterlingwell-Homes) ---------- */
-function readBrand(){
+/* ---------- property illustrations ---------- */
+function room(kind,p){
+  const sky=`<rect x="16" y="12" width="58" height="44" rx="2" fill="#0D1726"/><g fill="#1E2D47"><rect x="20" y="30" width="9" height="26"/><rect x="31" y="22" width="11" height="34"/><rect x="44" y="34" width="8" height="22"/><rect x="54" y="26" width="10" height="30"/><rect x="66" y="38" width="6" height="18"/></g><g fill="#F4D58D"><rect x="33" y="26" width="2" height="2"/><rect x="38" y="31" width="2" height="2"/><rect x="57" y="30" width="2" height="2"/><rect x="22" y="36" width="2" height="2"/><rect x="47" y="40" width="2" height="2"/></g><circle cx="66" cy="19" r="3.5" fill="#F4D58D"/><rect x="16" y="12" width="58" height="44" rx="2" fill="none" stroke="${p.trim}" stroke-width="2.5"/><rect x="44" y="12" width="1.6" height="44" fill="${p.trim}"/>`;
+  if(kind==="living")return `<svg viewBox="0 0 160 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="160" height="110" fill="${p.wall}"/><rect y="80" width="160" height="30" fill="${p.floor}"/>${sky}<rect x="8" y="10" width="7" height="62" rx="2" fill="${p.curtain}"/><rect x="75" y="10" width="7" height="62" rx="2" fill="${p.curtain}"/><ellipse cx="112" cy="94" rx="40" ry="7" fill="${p.rug}"/><rect x="84" y="46" width="66" height="18" rx="6" fill="${p.sofa2}"/><rect x="80" y="60" width="74" height="22" rx="6" fill="${p.sofa}"/><rect x="88" y="52" width="16" height="12" rx="3" fill="${p.cush}"/><rect x="128" y="52" width="16" height="12" rx="3" fill="${p.cush}"/><rect x="98" y="86" width="30" height="4" rx="2" fill="${p.trim}"/><line x1="148" y1="40" x2="148" y2="80" stroke="${p.trim}" stroke-width="1.5"/><path d="M141 40 L155 40 L152 31 L144 31 Z" fill="#F4D58D"/><rect x="2" y="70" width="10" height="11" rx="2" fill="${p.pot}"/><circle cx="7" cy="64" r="6" fill="#3F7D4E"/><circle cx="3" cy="58" r="4.5" fill="#4E9460"/><circle cx="10" cy="56" r="4" fill="#3F7D4E"/></svg>`;
+  if(kind==="house")return `<svg viewBox="0 0 160 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="160" height="110" fill="#0F1B2E"/><circle cx="132" cy="20" r="7" fill="#F4D58D"/><rect y="88" width="160" height="22" fill="#2E4A33"/><path d="M28 50 L80 22 L132 50 Z" fill="${p.trim}"/><rect x="34" y="50" width="92" height="40" fill="${p.wall}"/><rect x="44" y="58" width="16" height="12" fill="#F4D58D"/><rect x="100" y="58" width="16" height="12" fill="#F4D58D"/><rect x="72" y="64" width="16" height="26" fill="${p.sofa}"/><rect x="44" y="74" width="16" height="10" fill="#F4D58D" opacity=".8"/><rect x="100" y="74" width="16" height="10" fill="#F4D58D" opacity=".8"/><rect x="8" y="70" width="6" height="20" fill="#5B3A29"/><circle cx="11" cy="64" r="10" fill="#3F7D4E"/><circle cx="150" cy="66" r="9" fill="#3F7D4E"/><rect x="148" y="70" width="5" height="20" fill="#5B3A29"/></svg>`;
+  if(kind==="land")return `<svg viewBox="0 0 160 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="160" height="110" fill="#BFE0F2"/><circle cx="130" cy="24" r="10" fill="#F6C453"/><path d="M0 70 Q40 58 80 66 T160 62 L160 110 L0 110 Z" fill="#8DBF6A"/><path d="M0 84 Q50 74 100 82 T160 80 L160 110 L0 110 Z" fill="#6FA552"/><g stroke="#7A5634" stroke-width="2"><line x1="30" y1="70" x2="30" y2="86"/><line x1="60" y1="68" x2="60" y2="84"/><line x1="90" y1="70" x2="90" y2="86"/><line x1="120" y1="68" x2="120" y2="84"/></g><line x1="30" y1="76" x2="120" y2="74" stroke="#E5E5E5" stroke-width="1.5"/><rect x="62" y="40" width="36" height="18" rx="2" fill="#FFFFFF"/><text x="80" y="52" text-anchor="middle" font-size="8" font-family="sans-serif" fill="#2E4A33" font-weight="700">FOR SALE</text><rect x="79" y="58" width="2" height="12" fill="#7A5634"/></svg>`;
+  return `<svg viewBox="0 0 160 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="160" height="110" fill="${p.wall2}"/><rect y="82" width="160" height="28" fill="${p.floor}"/><rect x="92" y="18" width="40" height="26" rx="2" fill="${p.art}"/><rect x="92" y="18" width="40" height="26" rx="2" fill="none" stroke="${p.trim}" stroke-width="2"/><path d="M96 40 L108 28 L116 36 L122 30 L130 40 Z" fill="rgba(255,255,255,.55)"/><rect x="40" y="46" width="84" height="22" rx="4" fill="${p.head}"/><rect x="34" y="64" width="96" height="26" rx="4" fill="#F5F3EE"/><rect x="34" y="74" width="96" height="16" rx="3" fill="${p.throw}"/><rect x="44" y="56" width="26" height="11" rx="4" fill="#FFFFFF"/><rect x="94" y="56" width="26" height="11" rx="4" fill="#FFFFFF"/><rect x="8" y="66" width="20" height="18" rx="2" fill="${p.trim}"/><path d="M12 58 L24 58 L21 48 L15 48 Z" fill="#F4D58D"/><rect x="17" y="58" width="2" height="8" fill="${p.trim}"/><rect x="136" y="66" width="20" height="18" rx="2" fill="${p.trim}"/></svg>`;
+}
+const PAL={
+ teal:{wall:"#E9E1D6",wall2:"#DDE6E2",floor:"#A9825F",curtain:"#C7A27A",rug:"#D9CBB6",sofa:"#2F5D58",sofa2:"#264D49",cush:"#E8B65A",trim:"#4A3B2E",pot:"#B5653F",art:"#6E9C94",head:"#2F5D58",throw:"#2F5D58"},
+ plum:{wall:"#E6E4EC",wall2:"#ECE3DC",floor:"#8C6A52",curtain:"#9B8FB3",rug:"#CFC7DB",sofa:"#7A4E3A",sofa2:"#6A4232",cush:"#D9D2C3",trim:"#3D3340",pot:"#8E5A3C",art:"#B98A6A",head:"#6A4232",throw:"#B98A6A"}
+};
+
+/* ---------- industries ----------
+   Each industry follows the same story: the customer asks after hours, the assistant answers from the
+   business's offers, collects details, logs the request, alerts the owner, follows up, and the customer confirms. */
+const N={
+ realestate:{label:"Real estate",title:"Sales Assistant",brand:"Lekki Prime Homes",place:"Lekki, Lagos",
+  customer:"buyer",Customer:"Buyer",owner:"agent",reqWord:"inspection request",ReqTitle:"Inspection requests",
+  itemLabel:"Property",detailLabel:"Inspection",valueLabel:"Price",
+  t:{start:"11:42 PM",startSub:"After hours",follow:"10:00 AM",followSub:"Next morning",followDay:true,reply:"10:18 AM",replySub:"Next morning"},
+  intro:"A buyer messages a real estate company on WhatsApp. The office closed hours ago.",
+  ask:"Good evening, do you have a 4 bedroom in Lekki under 200m?",
+  items:[
+   {name:"4-Bed Semi-Detached Duplex + BQ",short:"4-bed duplex, Chevron",sub:"Chevron, Lekki · Governor's Consent",price:185e6,tags:["⚡ 24hr power","🛡️ Gated estate","🅿️ 3 cars","💳 12-month plan"],pics:["house","living"],pal:"teal",keys:["chevron","duplex","4"]},
+   {name:"4-Bed Terrace Duplex",short:"4-bed terrace, Ikate",sub:"Ikate, Lekki · C of O",price:160e6,tags:["⚡ 24hr power","🏊 Pool","🛡️ Security","💳 6-month plan"],pics:["house","bed"],pal:"plum",keys:["ikate","terrace"]},
+   {name:"500sqm Dry Land",short:"500sqm land, Ibeju-Lekki",sub:"Ibeju-Lekki · C of O",price:18e6,tags:["📄 C of O","🛣️ Tarred road","💳 ₦3M deposit"],pics:["land"],pal:"teal",keys:["land","plot","ibeju"]}],
+  pickQ:"Which one would you like to inspect, and which day works for you?",
+  pick:"The Chevron one. Saturday morning works",pickChips:["The Chevron one. Saturday morning works","Ikate, this Sunday"],
+  defaultDetail:"Saturday, 10:00 AM",name:"Chinedu Okafor",
+  detail:q=>/sun/i.test(q)?"Sunday, 1:00 PM":/sat/i.test(q)?"Saturday, 10:00 AM":/fri/i.test(q)?"Friday, 4:00 PM":"Saturday, 10:00 AM",
+  value:(it)=>it.price,summaryTitle:"Inspection booked ✅",
+  extra:it=>[["Title",it.sub.split("· ")[1]]],
+  after:`Our agent will call you to confirm, and you'll get a reminder the day before. Reply <b>YES</b> to confirm the time.`,
+  alertTitle:"NEW INSPECTION REQUEST",
+  follow:(S)=>`Good morning ${first(S.name)} 😊 Just confirming your inspection of the ${S.item.short} on ${S.detail}. Reply YES to confirm, or tell me a better time.`,
+  yes:"Yes, Saturday is fine",done:(S)=>`Confirmed ✅ ${S.detail} at the ${S.item.short}. Our agent will meet you there and send the location pin today.`,
+  readyTitle:"BUYER CONFIRMED INSPECTION",
+  outro:"Never lose a late-night buyer again."},
+
+ shortlet:{label:"Short-let apartments",title:"Booking Assistant",brand:"Lekki Haven Stays",place:"Lekki, Lagos",
+  customer:"guest",Customer:"Guest",owner:"host",reqWord:"booking request",ReqTitle:"Booking requests",
+  itemLabel:"Apartment",detailLabel:"Dates & guests",valueLabel:"Total",
+  t:{start:"1:04 AM",startSub:"Everyone's asleep",follow:"3:06 AM",followSub:"2 hours later",followDay:false,reply:"8:12 AM",replySub:"Next morning"},
+  intro:"A guest messages a short-let on WhatsApp. Everyone at the apartment is asleep.",
+  ask:"Hi, do you have a 2-bedroom in Lekki for Dec 20 to 27?",
+  items:[
+   {name:"The Admiralty Suite",short:"Admiralty Suite",sub:"2-bed · Lekki Phase 1",price:180000,per:"night",tags:["⚡ 24hr power","📶 Fast Wi-Fi","🛡️ 24/7 security","❄️ AC","📺 Netflix"],pics:["living","bed"],pal:"teal",keys:["admiralty","phase 1","first"]},
+   {name:"Ikate Garden Apartment",short:"Ikate Garden",sub:"2-bed · Ikate, Lekki",price:150000,per:"night",tags:["⚡ 24hr power","📶 Fast Wi-Fi","🛡️ 24/7 security","🏊 Pool"],pics:["living","bed"],pal:"plum",keys:["ikate","garden","second"]}],
+  pickQ:"Both have 24-hour power, fast Wi-Fi and security. Refundable caution: ₦100,000.\n\nWhich one would you like, and how many guests?",
+  pick:"The Admiralty one please. We're 4 guests",pickChips:["The Admiralty one please. We're 4 guests","Ikate Garden, 2 guests"],
+  defaultDetail:"20–27 Dec · 7 nights · 4 guests",name:"Tolu Bakare",
+  detail:q=>{const g=(q.match(/(\d+)\s*(guests|people|of us|pax)/i)||q.match(/we\s*(?:are|'re)\s*(\d+)/i)||[])[1]||4;return `20–27 Dec · 7 nights · ${g} guests`},
+  value:(it)=>it.price*7,summaryTitle:"Booking request ✅",
+  extra:()=>[["Caution","₦100,000, refundable"]],
+  after:`I've sent this to our host. December dates go fast, so reply <b>YES</b> and we'll send payment details to secure it.`,
+  alertTitle:"NEW BOOKING REQUEST",
+  follow:(S)=>`Hi ${first(S.name)} 😊 Just checking in. ${S.item.name} is still free for 20–27 Dec, but December is booking fast. Shall I send payment details to hold it?`,
+  yes:"Yes please, send the payment details",done:()=>`Wonderful 🎉 Our host has been notified and will send the payment details right away. You'll get check-in directions once payment is in.`,
+  readyTitle:"GUEST READY TO PAY",
+  outro:"Never miss a 1am booking again."},
+
+ cars:{label:"Car dealership",title:"Sales Assistant",brand:"Prestige Autos",place:"Victoria Island, Lagos",
+  customer:"buyer",Customer:"Buyer",owner:"sales rep",reqWord:"test drive request",ReqTitle:"Test drive requests",
+  itemLabel:"Car",detailLabel:"Test drive",valueLabel:"Price",
+  t:{start:"10:47 PM",startSub:"Showroom closed",follow:"9:30 AM",followSub:"Next morning",followDay:true,reply:"9:52 AM",replySub:"Next morning"},
+  intro:"A buyer messages a car dealer on WhatsApp after the showroom has closed.",
+  ask:"Good evening, do you have a Lexus RX 350 or a similar SUV under 55m?",
+  items:[
+   {name:"2020 Lexus RX 350",short:"2020 Lexus RX 350",sub:"Foreign used · 41,000 km · Accident-free",price:52e6,tags:["✅ Duty cleared","🔍 Inspection report","💳 Part-payment"],emoji:"🚙",bg:"linear-gradient(135deg,#1F2937,#4B5563)",keys:["lexus","rx"]},
+   {name:"2019 Toyota Highlander XLE",short:"2019 Highlander",sub:"Foreign used · 58,000 km · Clean title",price:34e6,tags:["✅ Duty cleared","🔍 Inspection report","🔁 Swap accepted"],emoji:"🚘",bg:"linear-gradient(135deg,#7F1D1D,#B91C1C)",keys:["highlander","toyota"]}],
+  pickQ:"Both are duty-cleared and come with a full inspection report. Which would you like to test drive, and when?",
+  pick:"The Lexus. Can I come tomorrow by 2pm?",pickChips:["The Lexus. Can I come tomorrow by 2pm?","The Highlander, Saturday"],
+  defaultDetail:"Tomorrow, 2:00 PM",name:"Ibrahim Musa",
+  detail:q=>/sat/i.test(q)?"Saturday, 11:00 AM":/tomorrow|2pm|2 pm/i.test(q)?"Tomorrow, 2:00 PM":"Tomorrow, 2:00 PM",
+  value:(it)=>it.price,summaryTitle:"Test drive booked ✅",extra:()=>[["Showroom","Adeola Odeku St, VI"]],
+  after:`Our sales rep will have the car ready. Reply <b>YES</b> to confirm your slot.`,
+  alertTitle:"NEW TEST DRIVE REQUEST",
+  follow:(S)=>`Good morning ${first(S.name)} 😊 Your test drive of the ${S.item.short} is set for ${S.detail}. Reply YES to confirm, or tell me a better time.`,
+  yes:"Yes, I'll be there",done:(S)=>`Confirmed ✅ See you ${S.detail}. Bring a valid ID for the test drive.`,
+  readyTitle:"BUYER CONFIRMED TEST DRIVE",
+  outro:"Never lose a serious car buyer to a slow reply."},
+
+ restaurant:{label:"Restaurant & catering",title:"Order Assistant",brand:"Mama's Pot Kitchen",place:"Ikeja, Lagos",
+  customer:"customer",Customer:"Customer",owner:"kitchen manager",reqWord:"catering order",ReqTitle:"Catering orders",
+  itemLabel:"Package",detailLabel:"Event",valueLabel:"Total",
+  t:{start:"11:15 PM",startSub:"Kitchen closed",follow:"8:00 AM",followSub:"Next morning",followDay:true,reply:"8:21 AM",replySub:"Next morning"},
+  intro:"A customer messages a restaurant on WhatsApp late at night about a birthday party.",
+  ask:"Hi, do you do catering? Birthday this Saturday, about 50 guests",
+  items:[
+   {name:"Party Jollof + Chicken",short:"Jollof + Chicken (50)",sub:"Serves 50 · with coleslaw and moi moi",price:250000,tags:["🔥 Smoky party jollof","🍗 Grilled chicken","🚚 Delivery available"],emoji:"🍛",bg:"linear-gradient(135deg,#C2410C,#F59E0B)",keys:["jollof","rice","chicken"]},
+   {name:"Small Chops Platter",short:"Small chops (100 pcs)",sub:"100 pieces · puff-puff, samosa, spring rolls, gizdodo",price:65000,tags:["🎉 Party favourite","📦 Ready in trays"],emoji:"🥟",bg:"linear-gradient(135deg,#854D0E,#CA8A04)",keys:["small chops","chops","puff"]}],
+  pickQ:"Most parties take both together. What would you like for Saturday, and what time is the party?",
+  pick:"Both please. Party starts 4pm",pickChips:["Both please. Party starts 4pm","Just the jollof"],
+  defaultDetail:"Saturday, 4:00 PM · 50 guests",name:"Adaeze Nwosu",
+  detail:q=>/(\d{1,2})\s*(pm|am)/i.test(q)?`Saturday, ${q.match(/(\d{1,2})\s*(pm|am)/i)[1]}:00 ${q.match(/(\d{1,2})\s*(pm|am)/i)[2].toUpperCase()} · 50 guests`:"Saturday, 4:00 PM · 50 guests",
+  value:(it,q)=>/both/i.test(q||"")?315000:it.price,both:true,summaryTitle:"Catering order ✅",extra:()=>[["Delivery","Ikeja, 2 hours before"]],
+  after:`I've sent this to our kitchen manager. Reply <b>YES</b> and we'll send payment details to lock in your date.`,
+  alertTitle:"NEW CATERING ORDER",
+  follow:(S)=>`Good morning ${first(S.name)} 😊 Saturday is filling up fast for us. Shall I send payment details to lock in your catering for 50 guests?`,
+  yes:"Yes, send it",done:()=>`Great 🎉 Our kitchen manager has been notified and will send payment details now. Your order is held until noon today.`,
+  readyTitle:"CUSTOMER READY TO PAY",
+  outro:"Never miss a big order while the kitchen sleeps."},
+
+ clinic:{label:"Clinic & hospital",title:"Appointment Assistant",brand:"CarePoint Clinic",place:"Surulere, Lagos",
+  customer:"patient",Customer:"Patient",owner:"front desk",reqWord:"appointment",ReqTitle:"Appointments",
+  itemLabel:"Service",detailLabel:"Appointment",valueLabel:"Fee",
+  t:{start:"9:48 PM",startSub:"Front desk closed",follow:"7:30 AM",followSub:"Next morning",followDay:true,reply:"7:41 AM",replySub:"Next morning"},
+  intro:"A patient messages a clinic on WhatsApp at night to book an appointment.",
+  ask:"Good evening, can I book to see a doctor tomorrow morning?",
+  items:[
+   {name:"General Consultation",short:"General consultation",sub:"With a general practitioner · about 30 minutes",price:15000,tags:["🩺 GP doctor","🧾 HMO accepted","⏱️ Short wait"],emoji:"🩺",bg:"linear-gradient(135deg,#0E7490,#22D3EE)",keys:["doctor","consult","gp","general"]},
+   {name:"Full Health Check",short:"Full health check",sub:"Blood tests, BP, sugar, cholesterol and doctor review",price:65000,tags:["🧪 Lab tests","📋 Written report"],emoji:"🧪",bg:"linear-gradient(135deg,#065F46,#10B981)",keys:["check","test","lab"]}],
+  pickQ:"Available tomorrow: 9:00 AM, 10:30 AM or 12:00 noon. Which service and which time suits you?\n\nFor emergencies, please go to the nearest hospital or call emergency services.",
+  pick:"General consultation, 9am",pickChips:["General consultation, 9am","Health check, 10:30"],
+  defaultDetail:"Tomorrow, 9:00 AM",name:"Funke Adeyemi",
+  detail:q=>/10[:.]?30/.test(q)?"Tomorrow, 10:30 AM":/12|noon/i.test(q)?"Tomorrow, 12:00 noon":"Tomorrow, 9:00 AM",
+  value:(it)=>it.price,summaryTitle:"Appointment booked ✅",extra:()=>[["Bring","ID and HMO card, if any"]],
+  after:`You'll get a reminder in the morning. Reply <b>YES</b> to confirm your appointment.`,
+  alertTitle:"NEW APPOINTMENT",
+  follow:(S)=>`Good morning ${first(S.name)} 😊 A reminder of your ${S.item.short} today at ${S.detail.replace("Tomorrow, ","")}. Reply YES to confirm, or tell me if you need another time.`,
+  yes:"Yes, I'm coming",done:(S)=>`Confirmed ✅ See you at ${S.detail.replace("Tomorrow, ","")}. Please arrive 10 minutes early.`,
+  readyTitle:"PATIENT CONFIRMED",
+  outro:"Every patient booked, reminded and recorded."},
+
+ salon:{label:"Salon & beauty",title:"Booking Assistant",brand:"Glow Studio",place:"Lekki, Lagos",
+  customer:"client",Customer:"Client",owner:"stylist",reqWord:"booking",ReqTitle:"Bookings",
+  itemLabel:"Service",detailLabel:"Appointment",valueLabel:"Price",
+  t:{start:"12:20 AM",startSub:"Salon closed",follow:"9:00 AM",followSub:"Next morning",followDay:true,reply:"9:14 AM",replySub:"Next morning"},
+  intro:"A client messages a salon on WhatsApp after midnight to book for Friday.",
+  ask:"Hi, can I book knotless braids for Friday? How much is it?",
+  items:[
+   {name:"Knotless Braids (mid-back)",short:"Knotless braids",sub:"About 5 hours · extensions included",price:45000,tags:["💇🏾‍♀️ Senior braider","🧴 Extensions included"],emoji:"💇🏾‍♀️",bg:"linear-gradient(135deg,#9D174D,#F472B6)",keys:["knotless","braid"]},
+   {name:"Silk Press + Trim",short:"Silk press",sub:"About 2 hours · heat protectant included",price:25000,tags:["✨ Heat protection","✂️ Free trim"],emoji:"💆🏾‍♀️",bg:"linear-gradient(135deg,#6D28D9,#A78BFA)",keys:["silk","press"]}],
+  pickQ:"Friday slots: 8:00 AM, 11:00 AM or 2:00 PM. A ₦10,000 deposit secures your slot. Which time works for you?",
+  pick:"Knotless, 8am please",pickChips:["Knotless, 8am please","Silk press, 2pm"],
+  defaultDetail:"Friday, 8:00 AM",name:"Zainab Bello",
+  detail:q=>/2\s*pm|2pm/i.test(q)?"Friday, 2:00 PM":/11/.test(q)?"Friday, 11:00 AM":"Friday, 8:00 AM",
+  value:(it)=>it.price,summaryTitle:"Booking ✅",extra:()=>[["Deposit","₦10,000 to secure"]],
+  after:`Reply <b>YES</b> and we'll send deposit details to secure your slot. Fridays fill up fast.`,
+  alertTitle:"NEW BOOKING",
+  follow:(S)=>`Good morning ${first(S.name)} 💕 Your ${S.item.short} slot (${S.detail}) is still held. Shall I send deposit details to secure it?`,
+  yes:"Yes please",done:()=>`Done 🎉 Deposit details are coming from our stylist now. Your slot is held until 12 noon.`,
+  readyTitle:"CLIENT READY TO PAY DEPOSIT",
+  outro:"Fill your chairs, even while you sleep."},
+
+ fashion:{label:"Fashion & boutique",title:"Order Assistant",brand:"Urban Threads",place:"Yaba, Lagos",
+  customer:"customer",Customer:"Customer",owner:"sales team",reqWord:"order",ReqTitle:"Orders",
+  itemLabel:"Item",detailLabel:"Size & delivery",valueLabel:"Price",
+  t:{start:"11:58 PM",startSub:"Store closed",follow:"10:00 AM",followSub:"Next morning",followDay:true,reply:"10:16 AM",replySub:"Next morning"},
+  intro:"A customer messages a fashion brand on WhatsApp just before midnight.",
+  ask:"Do you have senator wear in XL? I need it before Sunday",
+  items:[
+   {name:"Senator Two-Piece, Black",short:"Black senator",sub:"Sizes M–XXL · premium cashmere blend",price:32000,tags:["📦 Delivery in 48hrs","🔁 Free exchange"],emoji:"👔",bg:"linear-gradient(135deg,#111827,#374151)",keys:["senator","black"]},
+   {name:"Kaftan, Wine",short:"Wine kaftan",sub:"Sizes M–XL · embroidered neckline",price:28000,tags:["📦 Delivery in 48hrs","🔁 Free exchange"],emoji:"🧥",bg:"linear-gradient(135deg,#7F1D1D,#BE123C)",keys:["kaftan","wine"]}],
+  pickQ:"Both are in stock in XL and can reach you before Sunday. Which one would you like, and where should we deliver?",
+  pick:"The black senator, XL. Deliver to Yaba",pickChips:["The black senator, XL. Deliver to Yaba","Kaftan, L, pickup"],
+  defaultDetail:"XL · Delivery to Yaba by Friday",name:"Kunle Adebayo",
+  detail:q=>{const s=(q.match(/\b(xxl|xl|l|m)\b/i)||[,"XL"])[1].toUpperCase();const w=(q.match(/(?:to|in)\s+([a-z ]+)$/i)||[,"Yaba"])[1].trim().replace(/\b\w/g,c=>c.toUpperCase());return /pick/i.test(q)?`${s} · Store pickup`:`${s} · Delivery to ${w} by Friday`},
+  value:(it)=>it.price+3000,summaryTitle:"Order ✅",extra:()=>[["Delivery fee","₦3,000 (included)"]],
+  after:`Reply <b>YES</b> and we'll send payment details. It ships today once paid.`,
+  alertTitle:"NEW ORDER",
+  follow:(S)=>`Good morning ${first(S.name)} 😊 Your ${S.item.short} in ${S.detail.split(" · ")[0]} is still reserved. Pay today and it arrives before Sunday. Shall I send payment details?`,
+  yes:"Yes, send it",done:()=>`Great 🎉 Payment details are on the way from our sales team. It ships as soon as payment lands.`,
+  readyTitle:"CUSTOMER READY TO PAY",
+  outro:"Turn late-night DMs into paid orders."},
+
+ school:{label:"School admissions",title:"Admissions Assistant",brand:"Brightfield Schools",place:"Ikeja GRA, Lagos",
+  customer:"parent",Customer:"Parent",owner:"admissions officer",reqWord:"school tour",ReqTitle:"Admission enquiries",
+  itemLabel:"Class",detailLabel:"School tour",valueLabel:"Fees / term",
+  t:{start:"8:40 PM",startSub:"School closed",follow:"10:00 AM",followSub:"Next morning",followDay:true,reply:"10:35 AM",replySub:"Next morning"},
+  intro:"A parent messages a school on WhatsApp in the evening about admission.",
+  ask:"Good evening, is admission still open for Primary 3 in January?",
+  items:[
+   {name:"Primary 3 · January intake",short:"Primary 3",sub:"Entrance assessment required · 6 places left",price:450000,tags:["🚌 School bus","🍽️ Lunch included","💻 Coding club"],emoji:"🎒",bg:"linear-gradient(135deg,#1D4ED8,#60A5FA)",keys:["primary","3"]},
+   {name:"Nursery 2 · January intake",short:"Nursery 2",sub:"No assessment · 4 places left",price:350000,tags:["🎨 Play-based learning","🍽️ Lunch included"],emoji:"🧸",bg:"linear-gradient(135deg,#15803D,#4ADE80)",keys:["nursery"]}],
+  pickQ:"Yes, admission is open. Would you like to book a school tour? Tours run Tuesday and Thursday at 10:00 AM.",
+  pick:"Yes, Thursday please",pickChips:["Yes, Thursday please","Tuesday works"],
+  defaultDetail:"Thursday, 10:00 AM",name:"Mrs. Ngozi Eze",
+  detail:q=>/tue/i.test(q)?"Tuesday, 10:00 AM":"Thursday, 10:00 AM",
+  value:(it)=>it.price,summaryTitle:"School tour booked ✅",extra:()=>[["Child's class","Primary 3"]],
+  after:`Our admissions officer will meet you at the gate. Reply <b>YES</b> to confirm.`,
+  alertTitle:"NEW ADMISSION ENQUIRY",
+  follow:(S)=>`Good morning ${first(S.name)} 😊 Just confirming your school tour on ${S.detail}. Only a few Primary 3 places are left for January. Reply YES to confirm.`,
+  yes:"Yes, we'll be there",done:(S)=>`Confirmed ✅ See you on ${S.detail}. We'll send the admission form ahead of your visit.`,
+  readyTitle:"PARENT CONFIRMED TOUR",
+  outro:"Every parent answered, every tour booked."}
+};
+const ALIAS={"real-estate":"realestate",realestate:"realestate",realtor:"realestate",property:"realestate",properties:"realestate",shortlet:"shortlet","short-let":"shortlet",shortlets:"shortlet",apartment:"shortlet",apartments:"shortlet",airbnb:"shortlet",cars:"cars",car:"cars",autos:"cars",auto:"cars",dealer:"cars",restaurant:"restaurant",food:"restaurant",catering:"restaurant",kitchen:"restaurant",clinic:"clinic",hospital:"clinic",health:"clinic",salon:"salon",beauty:"salon",spa:"salon",hair:"salon",fashion:"fashion",boutique:"fashion",clothing:"fashion",clothes:"fashion",school:"school",schools:"school",admission:"school",admissions:"school"};
+
+/* ---------- link: #industry/Company-Name (also #industry--Company-Name or #industry) ---------- */
+let C,key,brand,hasNiche=false;
+function parseHash(){
   let h="";try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}
-  brand=/^[A-Za-z0-9-]{2,48}$/.test(h)?h.split("-").filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1)).join(" "):"Lekki Prime Homes";
-  $$(".brandName").forEach(e=>e.textContent=brand);
-  $("#initials").textContent=brand.split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
-  $("#sheetName").textContent=brand+" · Leads";
+  h=h.replace(/^\/+/,"").trim();
+  let parts=h.split(/\/|--/).filter(Boolean),k=null,name="";
+  if(parts.length&&ALIAS[parts[0].toLowerCase()]){k=ALIAS[parts[0].toLowerCase()];name=parts.slice(1).join(" ")}
+  else{name=parts.join(" ")}
+  hasNiche=!!k;key=k||"realestate";C=N[key];
+  name=name.replace(/[-_+]+/g," ").replace(/[^\p{L}\p{N} &'.]/gu,"").trim().slice(0,48);
+  brand=name?name.replace(/\b\p{L}/gu,c=>c.toUpperCase()):C.brand;
 }
 
-/* ---------- helpers ---------- */
-function fmt(n){if(n>=1e9)return"₦"+(n/1e9).toFixed(n%1e9?1:0)+"B";if(n>=1e6)return"₦"+Math.round(n/1e6)+"M";return"₦"+n.toLocaleString()}
-function now(){return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
-function today(){return new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}
-function dayName(){return new Date().toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function first(n){return String(n||"there").split(" ")[0]}
-function fakePhone(){const p=["0803","0806","0813","0816","0703","0706","0810","0905"];return p[Math.floor(Math.random()*p.length)]+" *** "+String(1000+Math.floor(Math.random()*9000))}
-
-/* ---------- sample data ---------- */
+/* ---------- state ---------- */
+const msgs=$("#msgs"),chips=$("#chips"),input=$("#msgInput");
+let S,rows,feed,alerts,follows,asks,playing=false,quietTimer=null,view="overview",clockNow="";
 function seed(){
-  S={stage:"start",interest:null,budget:null,timeline:null,name:null,phone:fakePhone(),slot:null,leadId:null};
-  leads=[
-   {id:"x1",name:"Mrs. Adaeze O.",phone:"0803 *** 4412",channel:"WhatsApp",interest:"4-Bed Semi-Detached, Chevron",budget:"₦200M",timeline:"This month",score:"hot",status:"Inspection booked",next:"Inspection Sat 10:00am",agent:AGENTS[0],time:"09:12",ex:true},
-   {id:"x2",name:"Tunde B.",phone:"0816 *** 2290",channel:"Instagram",interest:"3-Bed Terrace, Ajah",budget:"₦100M",timeline:"1–3 months",score:"warm",status:"Follow-up scheduled",next:"Follow-up tomorrow",agent:AGENTS[1],time:"10:47",ex:true},
-   {id:"x3",name:"David A. (London)",phone:"+44 *** 7731",channel:"WhatsApp",interest:"Land, Ibeju-Lekki",budget:"₦20M",timeline:"Just exploring",score:"cold",ah:true,status:"Nurture list",next:"New listings in 7 days",agent:AGENTS[1],time:"02:31",ex:true},
-   {id:"x4",name:"Kemi F.",phone:"0706 *** 5108",channel:"Facebook",interest:"2-Bed Apartment, Lekki Phase 1",budget:"₦120M",timeline:"1–3 months",score:"warm",status:"Details sent",next:"Follow-up in 2 days",agent:AGENTS[0],time:"11:05",ex:true}
-  ];
-  leads.sort((a,b)=>b.time.localeCompare(a.time));
-  asks={chv4:3,ajh3:2,ikb:2,lp12:2,ikt5:1,iky4:0,ikr3:1};
-  feed=[
-   {ic:"🔥",t:"Hot-lead alert sent to Femi: Mrs. Adaeze O., ₦200M budget",time:"09:13",ex:true},
-   {ic:"🌙",t:"After-hours enquiry answered at 2:31am: David A. (London)",time:"02:31",ex:true},
-   {ic:"📷",t:"Instagram DM answered and logged: Tunde B.",time:"10:47",ex:true}
-  ];
-  alerts=[
-   {type:"hot",agent:AGENTS[0],time:"09:13",ex:true,text:"🔥 <b>HOT LEAD</b>\n<b>Mrs. Adaeze O.</b> · 0803 *** 4412\nWants: 4-Bed Semi-Detached, Chevron\nBudget: ₦200M · Buying: this month\nInspection: Sat 10:00am\n\nCall her within 30 minutes. Full chat is in the sheet, row 3."},
-   {type:"handoff",agent:AGENTS[1],time:"10:52",ex:true,text:"🙋 <b>NEEDS A PERSON</b>\n<b>Tunde B.</b> (Instagram) asked: \"Can I pay part in dollars?\"\nThe assistant told him an agent will reply shortly. Tap to open the chat."}
-  ];
-  unseen=0;
+  S={stage:"start",item:null,detail:null,name:null,phone:"0803 *** 6618",rowId:null,lastQ:""};
+  const it=C.items,ex1=it[1]||it[0];
+  rows=[{id:"x1",time:"Yesterday",cust:"Bola A.",phone:"0816 *** 2290",what:ex1.short,detail:"—",value:C.value(ex1,""),status:"Confirmed",ex:true}];
+  feed=[{ic:"✅",t:`${cap1(C.reqWord)} confirmed: Bola A., ${ex1.short}`,time:"Yesterday",ex:true}];
+  alerts=[];follows=[];asks={};C.items.forEach((x,i)=>asks[i]=i===0?2:1);
+}
+function setClock(t,sub,day){clockNow=t;$("#clock").textContent=t;$("#clockSub").textContent=sub;$("#sky").className=day?"moon sun":"moon"}
+function addMsg(html,who){const b=document.createElement("div");b.className="bubble "+who;b.innerHTML=html+`<time>${clockNow}${who==="out"?" ✓✓":""}</time>`;msgs.appendChild(b);msgs.scrollTop=msgs.scrollHeight;return b}
+function addNode(el){msgs.appendChild(el);msgs.scrollTop=msgs.scrollHeight}
+function itemCard(it){
+  const d=document.createElement("div");d.className="item";
+  const pics=it.pics?`<div class="pics" style="${it.pics.length===1?"grid-template-columns:1fr":""}">${it.pics.map(k=>room(k,PAL[it.pal||"teal"])).join("")}</div>`:`<div class="tile" style="background:${it.bg}">${it.emoji}</div>`;
+  d.innerHTML=`${pics}<div class="bd"><strong>${esc(it.name)}</strong><span class="area">${esc(it.sub)}</span><span class="price">${it.per?naira(it.price):short(it.price)}${it.per?` <small>/ ${it.per} · ${naira(it.price*7)} for 7 nights</small>`:""}</span><div class="amen">${it.tags.map(x=>`<span>${esc(x)}</span>`).join("")}</div></div>`;
+  addNode(d);
+}
+async function typing(ms){
+  const t=document.createElement("div");t.className="typing";t.innerHTML="<i></i><i></i><i></i>";addNode(t);
+  const dots=t.querySelectorAll("i");let k=0;const iv=setInterval(()=>{dots.forEach((x,i)=>x.classList.toggle("on",i===k%3));k++},180);
+  await wait(ms);clearInterval(iv);t.remove();
+}
+function setChips(a){chips.innerHTML="";if(playing||FILM)return;a.forEach(c=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=c;b.onclick=()=>send(c);chips.appendChild(b)})}
+function cap(step,text){$("#capStep").textContent=step;$("#capText").textContent=text}
+function row(){return rows.find(r=>r.id===S.rowId)}
+function upsert(patch){
+  if(!S.rowId){S.rowId="r"+Date.now();rows.push({id:S.rowId,time:clockNow,cust:"New "+C.customer,phone:S.phone,what:"—",detail:"—",value:null,status:"Enquiry"})}
+  rows.forEach(r=>r.hl=false);Object.assign(row(),patch,{hl:true});render();
 }
 
-/* ---------- chat rendering ---------- */
-function addMsg(text,who){
-  const b=document.createElement("div");b.className="bubble "+who;
-  b.innerHTML=text+"<time>"+now()+(who==="out"?" ✓✓":"")+"</time>";
-  msgs.appendChild(b);msgs.scrollTop=msgs.scrollHeight;
-}
-function addListing(l){
-  const d=document.createElement("div");d.className="listing";
-  d.innerHTML=`<div class="ph"><span>${esc(l.area)}</span><span>${esc(l.doc)}</span></div><div class="bd"><strong>${esc(l.title)}</strong><span class="price">${fmt(l.price)}${l.type==="rent"?" / year":""}</span><span class="meta">${esc(l.plan)} · ${esc(l.status)}</span></div>`;
-  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
-}
-function setChips(arr){chips.innerHTML="";if(playing)return;arr.forEach(c=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=c;b.onclick=()=>send(c);chips.appendChild(b)})}
-function botSay(parts,chipList){
-  const t=document.createElement("div");t.className="typing";t.innerHTML="<i></i><i></i><i></i>";msgs.appendChild(t);msgs.scrollTop=msgs.scrollHeight;
-  chips.innerHTML="";
-  setTimeout(()=>{t.remove();parts.forEach(p=>typeof p==="string"?addMsg(p,"in"):addListing(p));setChips(chipList||[])},750);
-}
-
-/* ---------- understanding the buyer ---------- */
-function parseBudget(t){
-  const m=t.match(/(?:₦|n|ngn)?\s*(\d+(?:\.\d+)?)\s*(b|bn|billion|m|mil|million|k)\b/i);
-  if(!m)return null;let v=parseFloat(m[1]);const u=m[2].toLowerCase();
-  if(u.startsWith("b"))v*=1e9;else if(u.startsWith("m"))v*=1e6;else v*=1e3;return v;
-}
-function search(t){
-  const q=t.toLowerCase();let r=LISTINGS.slice();
-  const beds=q.match(/(\d)\s*-?\s*(bed|bedroom|br)/);
-  const isLand=/\bland|plot|sqm/.test(q),isRent=/\brent|lease|yearly/.test(q);
-  const locHit=LISTINGS.some(l=>l.loc.some(k=>q.includes(k)));
-  if(isLand)r=r.filter(l=>l.type==="land");
-  else if(isRent)r=r.filter(l=>l.type==="rent");
-  else r=r.filter(l=>l.type!=="land"&&l.type!=="rent");
-  if(beds&&!isLand){const f=r.filter(l=>l.beds===+beds[1]);if(f.length)r=f}
-  if(locHit){const f=r.filter(l=>l.loc.some(k=>q.includes(k)));if(f.length)r=f}
-  const b=parseBudget(q);let over=false;
-  if(b){S.budget=b;const f=r.filter(l=>l.price<=b*1.05);if(f.length)r=f;else{over=true;r=r.sort((a,c)=>a.price-c.price).slice(0,1)}}
-  return {r:r.slice(0,3),specific:!!(beds||locHit||b||isLand||isRent),over};
-}
-function score(){
-  let p=0;if(S.budget)p++;if(S.timeline==="This month")p+=2;else if(S.timeline==="1–3 months")p++;if(S.slot)p+=2;if(S.name)p++;
-  return p>=4?"hot":p>=2?"warm":"cold";
-}
-function upsertLead(){
-  if(!S.leadId){S.leadId="l"+Date.now();const h=new Date().getHours();leads.unshift({id:S.leadId,fresh:true,time:now(),ah:h<8||h>=18,channel:"WhatsApp",phone:S.phone,agent:AGENTS[leads.length%2]});}
-  const L=leads.find(l=>l.id===S.leadId);
-  L.name=S.name||"New buyer";L.interest=S.interest?S.interest.title+", "+S.interest.area.split(",")[0]:"Browsing";
-  L.budget=S.budget?fmt(S.budget):"–";L.timeline=S.timeline||"–";L.score=score();
-  L.status=S.slot?"Inspection booked":S.stage==="done"?"Follow-up scheduled":"In conversation";
-  L.next=S.slot?"Inspection "+S.slot:(L.score==="hot"?"Agent to call today":L.score==="warm"?"Follow-up in 24h":"New listings in 7 days");
-  L.fresh=true;unseen++;render();
-}
-function log(ic,t){feed.unshift({ic,t,time:now()});render()}
-function hotAlert(){
-  const L=leads.find(l=>l.id===S.leadId);const row=leads.length-leads.indexOf(L)+1;
-  alerts.unshift({type:"hot",agent:L.agent,time:now(),text:`🔥 <b>HOT LEAD</b>\n<b>${esc(S.name)}</b> · ${esc(S.phone)}\nWants: ${esc(S.interest?S.interest.title+", "+S.interest.area:"")}\nBudget: ${S.budget?fmt(S.budget):"not given"} · Buying: ${esc((S.timeline||"").toLowerCase())}\nInspection: ${esc(S.slot)}\n\nCall within 30 minutes. Full chat is in the sheet, row ${row}.`});
-  $("#toastMsg").textContent=`${S.name} · ${S.interest?S.interest.title:"property"} · ${S.budget?fmt(S.budget):""} · inspection ${S.slot}. Sent to ${L.agent}.`;
-  const t=$("#toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),5000);
-  log("🔥",`Hot-lead alert sent to ${L.agent}: ${S.name}, ${S.budget?fmt(S.budget):""} budget`);
-}
-function handoff(q){
-  alerts.unshift({type:"handoff",agent:AGENTS[0],time:now(),text:`🙋 <b>NEEDS A PERSON</b>\n<b>${esc(S.name||"A buyer")}</b> (WhatsApp) asked: "${esc(q.slice(0,90))}"\nThe assistant told them an agent will reply shortly. Tap to open the chat.`});
-  log("🙋",`Question handed to ${AGENTS[0]}: "${q.slice(0,50)}"`);
-}
-
-/* ---------- owner-side rendering ---------- */
-function followUps(){
-  const out=[];
-  leads.forEach(l=>{
-    const prop=l.interest.split(",")[0];
-    if(/Inspection/.test(l.next)){
-      const slot=l.next.replace("Inspection ","");
-      out.push({name:l.name,ex:l.ex,when:"Day before inspection",msg:`Hi ${first(l.name)}, a reminder of your inspection of the ${prop}, ${slot}. Reply 1 to confirm or 2 to reschedule.`,status:"Scheduled"});
-      out.push({name:l.name,ex:l.ex,when:"After inspection",msg:`Hi ${first(l.name)}, how did you find the ${prop}? I can send the payment plan breakdown or hold a unit for you.`,status:"Scheduled"});
-    }else if(l.score==="warm"){
-      out.push({name:l.name,ex:l.ex,when:"24 hours after last message",msg:`Hi ${first(l.name)}, still interested in the ${prop}? Units are moving. Would you like to inspect this week?`,status:l.ex?"Sent ✓":"Scheduled"});
-    }else if(l.score==="cold"){
-      out.push({name:l.name,ex:l.ex,when:"In 7 days",msg:`Hi ${first(l.name)}, new listings just came in that match what you asked about. Want me to send them?`,status:"Scheduled"});
-    }else{
-      out.push({name:l.name,ex:l.ex,when:"Today",msg:`Agent call first; the assistant follows up if the buyer goes quiet for 24 hours.`,status:"Waiting for agent"});
-    }
-  });
-  return out;
-}
+/* ---------- owner side ---------- */
 function render(){
-  if(!leads)return;
-  const hot=leads.filter(l=>l.score==="hot").length,insp=leads.filter(l=>/Inspection/.test(l.next)).length;
-  $("#kEnq").textContent=leads.length;$("#kHot").textContent=hot;$("#kInsp").textContent=insp;
-  const pill=s=>`<span class="pill ${s}">${s==="hot"?"🔥 Hot":s==="warm"?"Warm":"Cold"}</span>`;
-  const ex=l=>l.ex?'<span class="ex">EXAMPLE</span>':"";
-  $("#dashLeads").innerHTML=leads.map(l=>`<tr class="${l.fresh?"new":""}"><td>${esc(l.name)}${ex(l)}</td><td class="ch">${esc(l.channel)}</td><td>${esc(l.interest)}</td><td class="num">${esc(l.budget)}</td><td>${pill(l.score)}</td><td>${esc(l.next)}</td><td class="num">${esc(l.time)}</td></tr>`).join("");
-  // sheet
-  const hdr=["Date","Time","Name","Phone","Channel","Interested in","Budget","Timeline","Score","Status","Next action","Agent"];
-  $("#sheetBody").innerHTML=`<tr class="hdr"><th>1</th>${hdr.map(h=>`<td>${h}</td>`).join("")}</tr>`+
-    leads.slice().reverse().map((l,i)=>`<tr class="${l.fresh?"new":""}"><th>${i+2}</th><td>${today()}</td><td>${esc(l.time)}</td><td>${esc(l.name)}${ex(l)}</td><td>${esc(l.phone)}</td><td>${esc(l.channel)}</td><td>${esc(l.interest)}</td><td>${esc(l.budget)}</td><td>${esc(l.timeline)}</td><td class="s-${l.score}">${l.score==="hot"?"HOT":l.score==="warm"?"WARM":"COLD"}</td><td>${esc(l.status)}</td><td>${esc(l.next)}</td><td>${esc(l.agent)}</td></tr>`).join("");
-  $("#sheetSaved").textContent="All changes saved · "+now();
-  // bars
+  const live=rows.filter(r=>!r.ex);
+  $("#kEnq").textContent=live.length;$("#kReq").textContent=live.filter(r=>r.value).length;
+  $("#kVal").textContent=short(live.reduce((a,r)=>a+(r.value||0),0));
   const max=Math.max(1,...Object.values(asks));
-  $("#bars").innerHTML=LISTINGS.map(l=>({l,c:asks[l.id]||0})).sort((a,b)=>b.c-a.c).slice(0,5).map(({l,c})=>`<div class="bar"><div>${esc(l.title)}, ${esc(l.area.split(",")[0])}<div class="tr"><div class="fl" style="width:${c/max*100}%"></div></div></div><span class="c">${c}</span></div>`).join("");
-  const ch={WhatsApp:0,Instagram:0,Facebook:0};leads.forEach(l=>ch[l.channel]=(ch[l.channel]||0)+1);const cm=Math.max(1,...Object.values(ch));
-  $("#chan").innerHTML=Object.entries(ch).map(([k,v])=>`<div class="bar"><div>${k}<div class="tr"><div class="fl" style="width:${v/cm*100}%"></div></div></div><span class="c">${v}</span></div>`).join("");
-  $("#feed").innerHTML=feed.slice(0,7).map(f=>`<li><span class="ic">${f.ic}</span><div>${esc(f.t)}${f.ex?'<span class="ex">EXAMPLE</span>':""}<time>${esc(f.time)}</time></div></li>`).join("");
-  // alerts
-  $("#alertsList").innerHTML=alerts.map(a=>`<div class="wa"><div class="wa-from"><span class="avatar">AI</span>${esc(brand)} Assistant → ${esc(a.agent)} · ${esc(a.time)}${a.ex?'<span class="ex">EXAMPLE</span>':""}</div><div class="bubble in ${a.type==="hot"?"hotb":""}">${a.text}</div></div>`).join("")||'<div class="empty">No alerts yet. Book an inspection in the chat to trigger one.</div>';
-  // follow-ups
-  $("#followBody").innerHTML=followUps().map(f=>`<tr><td>${esc(f.name)}${f.ex?'<span class="ex">EXAMPLE</span>':""}</td><td>${esc(f.when)}</td><td>${esc(f.msg)}</td><td><span class="pill ${/Sent/.test(f.status)?"ok":f.status==="Scheduled"?"warm":"cold"}">${esc(f.status)}</span></td></tr>`).join("");
-  // report
-  const top=LISTINGS.map(l=>({l,c:asks[l.id]||0})).sort((a,b)=>b.c-a.c).slice(0,3);
-  const handoffs=alerts.filter(a=>a.type==="handoff").length;
-  const hotNames=leads.filter(l=>l.score==="hot").map(l=>l.name).join(", ")||"none yet";
-  $("#reportCard").innerHTML=`<div class="wa-from"><span class="avatar">AI</span>${esc(brand)} Assistant → Owner · 7:00pm</div><div class="bubble in">📊 <b>Daily report · ${dayName()}</b>
-
-<b>Enquiries:</b> ${leads.length} (WhatsApp ${ch.WhatsApp}, Instagram ${ch.Instagram}, Facebook ${ch.Facebook})
-<b>Hot leads:</b> ${hot} (${esc(hotNames)})
-<b>Inspections booked:</b> ${insp}
-<b>Replied after hours:</b> ${leads.filter(l=>l.ah).length}
-<b>Average reply time:</b> 2 seconds
-
-<b>Most asked about:</b>
-${top.map((t,i)=>`${i+1}. ${esc(t.l.title)}, ${esc(t.l.area.split(",")[0])} (${t.c})`).join("\n")}
-
-<b>Needs your attention:</b> ${handoffs} question${handoffs===1?"":"s"} handed to agents
-<b>Follow-ups going out tomorrow:</b> ${followUps().filter(f=>f.status==="Scheduled").length}
-
-Full details are in the Leads sheet.</div>`;
-  // badges
-  $$(".tab .dot").forEach(d=>{d.textContent=unseen;d.hidden=!(unseen>0&&view==="chat")});
-  setTimeout(()=>leads.forEach(l=>l.fresh=false),50);
+  $("#bars").innerHTML=C.items.map((it,i)=>({it,c:asks[i]||0})).sort((a,b)=>b.c-a.c).map(({it,c})=>`<div class="bar"><div>${esc(it.name)}<div class="tr"><div class="fl" style="width:${c/max*100}%"></div></div></div><span class="c">${c}</span></div>`).join("");
+  $("#feed").innerHTML=feed.slice(0,6).map(f=>`<li><span class="ic">${f.ic}</span><span>${esc(f.t)}${f.ex?'<span class="ex">EXAMPLE</span>':""}</span><time>${esc(f.time)}</time></li>`).join("");
+  const hdr=["Received",C.Customer,"Phone",C.itemLabel,C.detailLabel,C.valueLabel+" (₦)","Status","Next step"];
+  $("#sheetBody").innerHTML=`<tr class="hdr"><th>1</th>${hdr.map(h=>`<td>${esc(h)}</td>`).join("")}</tr>`+rows.map((r,i)=>`<tr class="${r.hl?"hl":""}"><th>${i+2}</th><td>${esc(r.time)}</td><td>${esc(r.cust)}${r.ex?'<span class="ex">EXAMPLE</span>':""}</td><td>${esc(r.phone)}</td><td>${esc(r.what)}</td><td>${esc(r.detail)}</td><td class="num">${r.value?Math.round(r.value).toLocaleString("en-NG"):"–"}</td><td><span class="pill ${r.status==="Confirmed"?"ok":r.status==="Enquiry"?"grey":"amber"}">${esc(r.status)}</span></td><td>${esc(r.next||(r.status==="Confirmed"?"Done":"Follow up"))}</td></tr>`).join("");
+  $("#saved").textContent="All changes saved · "+clockNow;
+  $("#alerts").innerHTML=alerts.map(a=>`<div class="wa ${a.fresh?"new":""}"><div class="wa-from"><span class="avatar">AI</span>${esc(brand)} Assistant → ${esc(cap1(C.owner))} · ${esc(a.time)}</div><div class="bubble in ${a.cls}">${a.html}</div></div>`).join("")||`<div class="empty">No alerts yet. They appear here the moment a ${esc(C.customer)} sends a ${esc(C.reqWord)}.</div>`;
+  $("#alertDot").hidden=!alerts.some(a=>a.fresh)||view==="alerts";
+  $("#followBody").innerHTML=follows.map(f=>`<tr><td>${esc(f.cust)}</td><td>${esc(f.when)}</td><td>${esc(f.msg)}</td><td><span class="pill ${/Sent|Replied/.test(f.status)?"ok":"amber"}">${esc(f.status)}</span></td></tr>`).join("")||`<tr><td colspan="4" class="note">Follow-ups appear here when a ${esc(C.customer)} goes quiet.</td></tr>`;
 }
+const cap1=s=>s.charAt(0).toUpperCase()+s.slice(1);
+function setView(v){view=v;$$(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.v===v)));$$(".view").forEach(x=>x.classList.toggle("active",x.dataset.view===v));if(v==="alerts")alerts.forEach(a=>a.fresh=false);render()}
+$$(".tab").forEach(t=>t.onclick=()=>setView(t.dataset.v));
 
 /* ---------- conversation ---------- */
-const OPEN_CHIPS=["4-bed in Lekki under ₦200M","Land in Ibeju-Lekki","3-bed under ₦100M","Something to rent"];
-function welcome(){return `Hello 👋 Welcome to ${esc(brand)}.\nI can show you available properties with prices and payment plans, and book an inspection for you. What are you looking for?`}
-function reply(t){
-  const q=t.toLowerCase().trim();
+function matchItem(q){q=q.toLowerCase();let best=-1,score=0;C.items.forEach((it,i)=>{const s=it.keys.filter(k=>q.includes(k)).length;if(s>score){score=s;best=i}});return best}
+async function reply(t){
+  const q=t.toLowerCase();clearTimeout(quietTimer);S.lastQ=t;
+  if(S.stage==="start"){
+    const m=matchItem(q),order=C.items.map((x,i)=>i);if(m>0){order.splice(m,1);order.unshift(m)}
+    const shown=order.slice(0,2);shown.forEach(i=>asks[i]=(asks[i]||0)+1);
+    upsert({what:C.items[shown[0]].short});
+    feed.unshift({ic:"💬",t:`New enquiry answered in 3 seconds: ${C.items[shown[0]].short}`,time:clockNow});render();
+    await typing(1100);
+    addMsg(`${greet()} 👋 Thanks for messaging ${esc(brand)}. Here's what we have for you:`,"in");
+    for(const i of shown){await wait(550);itemCard(C.items[i])}
+    await wait(650);addMsg(esc(C.pickQ),"in");
+    S.stage="pick";setChips(C.pickChips);return;
+  }
+  if(S.stage==="pick"){
+    const m=matchItem(q);S.item=C.items[m>=0?m:0];S.detail=C.detail(q)||C.defaultDetail;S.pickText=t;
+    upsert({what:S.item.short,detail:S.detail});
+    await typing(900);
+    addMsg(`Great choice 👌 May I have your full name?`,"in");S.stage="name";setChips([C.name]);return;
+  }
   if(S.stage==="name"){
-    S.name=t.replace(/^(my name is|i am|i'm|its|it's|this is|name:?)\s+/i,"").split(/[,.!]/)[0].trim().replace(/\b\w/g,c=>c.toUpperCase()).slice(0,40)||"Buyer";
-    S.stage="slot";upsertLead();log("📝",`New lead saved to sheet: ${S.name} (${S.phone})`);
-    return botSay([`Thank you, ${esc(first(S.name))}. Would you like to inspect the ${esc(S.interest?S.interest.title:"property")}? Available slots this week:`],[...SLOTS,"Not yet, just send details"]);
+    S.name=t.replace(/^(my name is|i am|i'm|it's|its|name:?)\s+/i,"").replace(/[.!]+\s*$/,"").split(/[,!]/)[0].trim().replace(/\b\p{L}/gu,c=>c.toUpperCase()).slice(0,40)||cap1(C.customer);
+    const val=C.value(S.item,S.pickText);S.value=val;
+    const what=C.both&&/both/i.test(S.pickText||"")?C.items.map(x=>x.short).join(" + "):S.item.short;S.what=what;
+    upsert({cust:S.name,what,value:val,status:"Requested",next:`${cap1(C.owner)} to confirm`});
+    feed.unshift({ic:"📝",t:`${cap1(C.reqWord)} saved: ${S.name}, ${what}, ${short(val)}`,time:clockNow});
+    alerts.unshift({fresh:true,cls:"alert",time:clockNow,html:`🔔 <b>${esc(C.alertTitle)}</b>\n<b>${esc(S.name)}</b> · ${esc(S.phone)}\n${esc(C.itemLabel)}: ${esc(what)}\n${esc(C.detailLabel)}: ${esc(S.detail)}\n${esc(C.valueLabel)}: <b>${naira(val)}</b>\n\nReceived ${clockNow}. Open the sheet (row ${rows.length+1}) or reply here to contact them.`});
+    follows.unshift({cust:S.name,when:`If no reply by ${C.t.follow}`,msg:C.follow(S),status:"Scheduled"});
+    render();
+    await typing(1000);
+    const d=document.createElement("div");d.className="summary";
+    const rowsS=[["Name",S.name],[C.itemLabel,what],[C.detailLabel,S.detail],[C.valueLabel,naira(val)],...C.extra(S.item)];
+    d.innerHTML=`<b>${esc(C.summaryTitle)}</b><dl>${rowsS.map(([a,b])=>`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("")}</dl>`;
+    addNode(d);await wait(600);addMsg(C.after,"in");
+    S.stage="sent";setChips([C.yes]);
+    if(!playing&&!FILM)quietTimer=setTimeout(()=>quietFollowUp(true),20000);
+    return;
   }
-  if(S.stage==="slot"){
-    const slot=SLOTS.find(s=>q.includes(s.toLowerCase()))||SLOTS.find(s=>q.includes(s.toLowerCase().slice(0,3))&&q.includes(s.split(", ")[1].replace(":00","").slice(0,-2)));
-    if(slot){S.slot=slot;S.stage="done";upsertLead();log("📅",`Inspection booked: ${S.name}, ${slot}`);
-      if(score()==="hot")hotAlert();
-      return botSay([`Booked ✅\n<b>${esc(S.interest?S.interest.title:"Inspection")}</b>\n${esc(S.interest?S.interest.area:"")}\n${slot}\n\nOur agent will call you shortly to confirm, and you'll get a reminder the day before. Anything else I can help with?`],["Payment plan details","What documents does it have?","See other properties"]);}
-    if(/not yet|details|later|^no/.test(q)){S.stage="done";upsertLead();log("⏰",`Follow-up scheduled for ${S.name}`);
-      return botSay([`No problem. I've noted your interest, and our team will send photos, the title documents and the full payment plan. I'll check in with you tomorrow. You can message here anytime.`],["Payment plan details","See other properties"]);}
+  if((S.stage==="sent"||S.stage==="followed")&&/yes|ok|okay|send|sure|please|confirm|fine|coming|there/.test(q)){
+    const r=row();r.status="Confirmed";r.next="Follow through today";
+    alerts.unshift({fresh:true,cls:"money",time:clockNow,html:`✅ <b>${esc(C.readyTitle)}</b>\n<b>${esc(S.name)}</b> replied at ${clockNow}.\n${esc(S.what)} · ${esc(S.detail)}\n${esc(C.valueLabel)}: <b>${naira(S.value)}</b>`});
+    feed.unshift({ic:"✅",t:`${S.name} confirmed. ${cap1(C.owner)} notified`,time:clockNow});
+    if(follows[0]&&/Sent/.test(follows[0].status))follows[0].status="Sent ✓ · Replied";
+    upsert({});await typing(900);addMsg(C.done(S),"in");S.stage="done";return;
   }
-  if(S.stage==="timeline"){
-    S.timeline=/this month|now|asap|urgent|this week|immediately|ready/.test(q)?"This month":/3|three|months|soon|1/.test(q)?"1–3 months":"Just exploring";
-    S.stage="name";upsertLead();
-    return botSay([`Got it. So our agent can attend to you properly, may I have your name?`]);
-  }
-  if(/^(hi|hello|hey|good (morning|afternoon|evening)|hy|howdy)\b/.test(q)&&S.stage==="start"&&!/\d|bed|land|plot|rent|lekki|ajah|ikoyi|ibeju|chevron|ikate/.test(q)){
-    return botSay([welcome()],OPEN_CHIPS);
-  }
-  if(/document|title|c of o|cofo|consent|deed|genuine|legit/.test(q)){
-    const l=S.interest||LISTINGS[0];
-    return botSay([`The <b>${esc(l.title)}</b> comes with <b>${esc(l.doc)}</b>. Our lawyer shares copies before any payment, and you're welcome to verify them independently.`],["Payment plan details","Book inspection"]);
-  }
-  if(/payment|plan|installment|instalment|spread/.test(q)){
-    const l=S.interest||LISTINGS[0];
-    return botSay([`Payment plan for the <b>${esc(l.title)}</b> (${esc(l.area)}):\n${esc(l.plan)}.\nTitle: ${esc(l.doc)}.\n\nWould you like to book an inspection?`],["Book inspection","See other properties"]);
-  }
-  if(/book|inspect|visit|view|see it/.test(q)&&!/\d\s*-?\s*bed/.test(q)){
-    if(!S.interest)S.interest=LISTINGS[0];
-    if(!S.name){S.stage="name";upsertLead();return botSay([`Happy to book that. May I have your name first?`]);}
-    S.stage="slot";return botSay([`Here are the available inspection slots:`],SLOTS);
-  }
-  if(/other|more|else|show me/.test(q)&&S.stage==="done"){
-    [LISTINGS[2],LISTINGS[4]].forEach(l=>asks[l.id]++);render();
-    return botSay([`Here's what else is available right now:`,LISTINGS[2],LISTINGS[4],`Tell me a location, budget or number of bedrooms and I'll narrow it down.`]);
-  }
-  const res=search(q);
-  if(res.specific&&res.r.length){
-    res.r.forEach(l=>asks[l.id]=(asks[l.id]||0)+1);
-    S.interest=res.r[0];
-    const intro=res.over?`Nothing available at that exact budget right now. This is the closest match:`:`Here ${res.r.length>1?"are "+res.r.length+" options that match":"is an option that matches"}:`;
-    upsertLead();log("💬",`Enquiry answered in 2 seconds: ${res.r[0].title}`);
-    if(S.stage==="start"||S.stage==="done"){S.stage="timeline";return botSay([intro,...res.r,`When are you looking to ${S.interest.type==="rent"?"move in":"buy"}?`],["This month","In 1–3 months","Just exploring"]);}
-    return botSay([intro,...res.r]);
-  }
-  handoff(t);render();
-  return botSay([`Good question. I've passed it to one of our agents, who will reply here shortly.\n\nMeanwhile, I can show you properties by location, budget or bedrooms. For example: "3-bed in Ajah under ₦100M".`],OPEN_CHIPS.slice(0,2).concat("Payment plan details"));
+  await typing(800);
+  addMsg(`Thanks! I've passed that to our ${esc(C.owner)}, who will reply here shortly.`,"in");
+  feed.unshift({ic:"🙋",t:`Question passed to ${C.owner}: “${t.slice(0,50)}”`,time:clockNow});render();
 }
-function send(t){t=String(t).trim();if(!t)return;addMsg(esc(t),"out");input.value="";reply(t)}
+function greet(){const h=clockNow.match(/(\d+):\d+\s*(AM|PM)/);if(!h)return "Hello";let x=+h[1]%12+(h[2]==="PM"?12:0);return x<12&&x>=5?"Good morning":x<17&&x>=12?"Good afternoon":"Good evening"}
+async function quietFollowUp(interactive){
+  if(S.stage!=="sent")return;
+  await skip(C.t.follow,C.t.followSub,`${first(S.name)} hasn't replied yet.`,C.t.followDay,interactive?"(sped up for this demo)":"");
+  setClock(C.t.follow,C.t.followSub,C.t.followDay);
+  await typing(900);addMsg(esc(C.follow(S)),"in");
+  follows[0].when=`${C.t.follow} (automatic)`;follows[0].status="Sent ✓";
+  feed.unshift({ic:"⏰",t:`Follow-up sent automatically to ${S.name}`,time:C.t.follow});
+  S.stage="followed";render();setChips([C.yes]);
+}
+async function send(t){t=String(t).trim();if(!t)return;chips.innerHTML="";addMsg(esc(t),"out");input.value="";await reply(t)}
 $("#compose").addEventListener("submit",e=>{e.preventDefault();if(!playing)send(input.value)});
 
-/* ---------- auto-play walkthrough ---------- */
-const SCRIPT=[
- {say:"Good evening, do you have a 4 bedroom in Lekki under 200m?",wait:2600},
- {say:"This month",wait:2200},
- {say:"Chioma Adeyemi",wait:2200},
- {say:"Sat, 10:00am",wait:2600,then:"alerts"},
- {say:"What documents does it have?",wait:2400},
- {say:"Payment plan details",wait:2600,then:"sheet"}
-];
-function autoplay(){
-  if(playing)return;start();playing=true;$("#autoplay").disabled=true;$("#autoplay").textContent="Playing…";input.disabled=true;
-  if(window.matchMedia("(max-width:960px)").matches)setView("chat");else setView("dash");
-  let i=0;
-  const step=()=>{
-    if(!playing)return;
-    if(i>=SCRIPT.length){playing=false;$("#autoplay").disabled=false;$("#autoplay").textContent="▶ Watch it work";input.disabled=false;
-      addSys("Demo finished. Try typing your own question, or open the tabs above.");setChips(OPEN_CHIPS.slice(0,2).concat("See other properties"));
-      if(window.matchMedia("(max-width:960px)").matches)setTimeout(()=>setView("sheet"),1200);return;}
-    const s=SCRIPT[i++];typeInto(s.say,()=>{send(s.say);
-      if(s.then&&!window.matchMedia("(max-width:960px)").matches)setTimeout(()=>setView(s.then),1300);
-      setTimeout(step,s.wait)});
-  };
-  setTimeout(step,1600);
-}
-function typeInto(text,done){let k=0;input.value="";const iv=setInterval(()=>{input.value=text.slice(0,++k);if(k>=text.length){clearInterval(iv);setTimeout(done,250)}},matchMedia("(prefers-reduced-motion:reduce)").matches?1:28)}
-function addSys(t){const d=document.createElement("div");d.className="sysnote";d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight}
+/* ---------- overlays & motion ---------- */
+function fade(el,from,to,ms){return new Promise(res=>{const n=Math.max(1,Math.round(ms/33));let i=0;el.style.opacity=from;const iv=setInterval(()=>{i++;el.style.opacity=String(from+(to-from)*i/n);if(i>=n){clearInterval(iv);res()}},33)})}
+async function showOverlay(html,hold){const o=$("#overlay");$("#ovBody").innerHTML=html;o.hidden=false;await fade(o,0,1,450);await wait(hold);await fade(o,1,0,450);o.hidden=true}
+function skip(time,label,line,day,note){return showOverlay(`<div class="${day?"sunbig":"moonbig"}"></div><div class="t">${time}<small>${label}</small></div><p>${esc(line)}</p>${note?`<p style="font-size:14px;opacity:.7">${note}</p>`:""}`,FILM?1900:1600)}
+function scrollTo(to,ms){const el=msgs,from=el.scrollTop;to=Math.min(to,el.scrollHeight-el.clientHeight);return new Promise(res=>{const n=Math.max(1,Math.round(ms/33));let i=0;const iv=setInterval(()=>{i++;const k=i/n,e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;el.scrollTop=from+(to-from)*e;if(i>=n){clearInterval(iv);res()}},33)})}
+async function typeIn(text){input.value="";for(let k=1;k<=text.length;k++){input.value=text.slice(0,k);await wait(38)}await wait(260)}
 
-/* ---------- views ---------- */
-function setView(v){
-  view=v;app.dataset.view=v;
-  const rv=v==="chat"?"dash":v;
-  $$(".view").forEach(el=>el.classList.toggle("active",el.dataset.viewId===rv));
-  $$(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.v===v||(v==="chat"&&t.dataset.v==="dash"&&!window.matchMedia("(max-width:960px)").matches))));
-  if(v!=="chat")unseen=0;render();
+/* ---------- scripted run ---------- */
+async function run(){
+  if(playing)return;start(true);playing=true;$("#play").disabled=true;input.disabled=true;setView("overview");
+  const INTRO=`<div class="moonbig"></div><div class="t">${C.t.start}<small>${esc(C.place)}</small></div><p>${esc(C.intro)}</p>`;
+  if(FILM){const o=$("#overlay");o.hidden=false;o.style.opacity=1;$("#ovBody").innerHTML=INTRO;await wait(3800);await fade(o,1,0,500);o.hidden=true}
+  else await showOverlay(INTRO,2200);
+  cap(C.t.start,`A ${C.customer} messages ${brand} after hours.`);await wait(500);
+  await typeIn(C.ask);await send(C.ask);
+  cap("Instant reply",`Real answers from ${brand}'s own offers, prices and details, in seconds.`);
+  const cards=msgs.querySelectorAll(".item");
+  if(cards.length){await scrollTo(cards[0].offsetTop-8,700);await wait(2600);if(cards[1]){await scrollTo(cards[1].offsetTop-8,700);await wait(2300)}}
+  await scrollTo(msgs.scrollHeight,600);await wait(1200);
+  await typeIn(C.pick);await send(C.pick);
+  cap("Collecting details",`The ${C.customer}'s choice and ${C.detailLabel.toLowerCase()}, captured as they chat.`);await wait(1300);
+  await typeIn(C.name);await send(C.name);await wait(1200);
+  setView("sheet");cap("Logged",`The ${C.reqWord} is saved to ${brand}'s Google Sheet automatically.`);await wait(5500);
+  setView("alerts");cap(`${cap1(C.owner)} alerted`,`The ${C.owner} gets a WhatsApp alert with every detail.`);await wait(5500);
+  cap("Goes quiet",`No reply from ${first(S.name)}. The assistant waits.`);await wait(1400);
+  await quietFollowUp(false);
+  setView("follow");cap("Automatic follow-up",`At ${C.t.follow}, the assistant follows up on its own.`);await wait(5500);
+  await skip(C.t.reply,C.t.replySub,`${first(S.name)} replies.`,true);
+  setClock(C.t.reply,C.t.replySub,true);cap(C.t.reply,`The ${C.customer} replies, and the ${C.owner} is told straight away.`);
+  await typeIn(C.yes);await send(C.yes);await wait(900);
+  setView("alerts");cap("Confirmed",`${cap1(C.owner)} notified: the ${C.customer} has confirmed. Nothing lost overnight.`);await wait(5000);
+  setView("overview");cap("Overview",`Every enquiry, request and follow-up, recorded while ${brand} slept.`);await wait(5500);
+  const OUTRO=`<span class="by">AE Intelligence · ${esc(C.label)}</span><h2>${esc(C.outro)}</h2><ul><li>Replies in seconds, 24/7</li><li>Knows your prices and details</li><li>Every enquiry in Google Sheets</li><li>${esc(cap1(C.owner))} alerted on WhatsApp</li><li>Automatic follow-ups</li><li>Runs on your own WhatsApp</li></ul><span class="cta">Want this for ${esc(brand)}? Send me a message.</span>`;
+  const o=$("#overlay");$("#ovBody").innerHTML=OUTRO;o.hidden=false;await fade(o,0,1,600);
+  if(FILM){window.__filmDone=true;return}
+  await wait(4200);await fade(o,1,0,450);o.hidden=true;
+  playing=false;$("#play").disabled=false;input.disabled=false;cap("Your turn",`Chat as the ${C.customer} yourself, or open the tabs on the right.`);
 }
-$$(".tab").forEach(t=>t.addEventListener("click",()=>setView(t.dataset.v)));
+window.startFilm=run;
 
+/* ---------- apply industry ---------- */
+function apply(){
+  parseHash();
+  document.title=`${brand} ${C.title}`;
+  $$(".brandName").forEach(e=>e.textContent=brand);
+  $("#title").textContent=C.title;
+  $("#eyebrow").textContent=`AE Intelligence · ${C.label} demo`;
+  $("#initials").textContent=brand.split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+  $("#tabSheet").firstChild.textContent="Google Sheet";
+  $("#tabAlerts").firstChild.textContent=`${cap1(C.owner)} alerts`;
+  $("#kReqL").textContent=C.ReqTitle;$("#sheetName").textContent=C.ReqTitle;$("#sheetTab").textContent=C.ReqTitle;
+  $("#sheetLead").textContent=`Every ${C.reqWord} lands in ${brand}'s own Google Sheet, with the ${C.customer}'s details and what they want.`;
+  $("#alertLead").textContent=`The ${C.owner} gets a WhatsApp alert the moment a ${C.reqWord} comes in.`;
+  $("#followLead").textContent=`If a ${C.customer} goes quiet, the assistant follows up on its own.`;
+  $("#fCust").textContent=C.Customer;
+  input.placeholder=`Message as the ${C.customer}…`;
+  $("#footnote").textContent=`Preview with sample ${C.itemLabel.toLowerCase()}s and prices. In a live setup it runs on ${brand}'s own WhatsApp number, with their real offers and prices. Built by AE Intelligence.`;
+  $("#maker").hidden=hasNiche||FILM;
+  start();
+}
 function start(silent){
-  playing=false;$("#autoplay").disabled=false;$("#autoplay").textContent="▶ Watch it work";input.disabled=false;
-  msgs.innerHTML='<span class="daytag">Today</span><div class="sysnote">Preview with sample listings. Chat as a buyer would.</div>';
-  seed();render();
-  if(!silent)botSay([welcome()],OPEN_CHIPS);
+  clearTimeout(quietTimer);playing=false;$("#play").disabled=false;input.disabled=false;$("#overlay").hidden=true;
+  msgs.innerHTML='<span class="daytag">Today</span>';seed();setClock(C.t.start,C.t.startSub,false);setView("overview");
+  cap("Live",`A ${C.customer} messages at ${C.t.start}. Chat as them, or press “Watch it work”.`);
+  if(!silent&&!FILM)setChips([C.ask]);
 }
-$("#reset").onclick=()=>start();
-$("#autoplay").onclick=autoplay;
-window.addEventListener("hashchange",()=>{readBrand();start()});
-readBrand();
-setView(window.matchMedia("(max-width:960px)").matches?"chat":"dash");
-start();
+$("#play").onclick=run;$("#reset").onclick=()=>start();
+window.addEventListener("hashchange",apply);
+
+/* ---------- link maker (only shown when the link has no industry) ---------- */
+const mkN=$("#mkNiche"),mkName=$("#mkName");
+mkN.innerHTML=Object.entries(N).map(([k,v])=>`<option value="${k}">${esc(v.label)}</option>`).join("");
+function mkLink(){const slug=(mkName.value.trim()||N[mkN.value].brand).replace(/[^\p{L}\p{N} &]/gu,"").trim().replace(/\s+/g,"-");return location.href.split("#")[0]+"#"+mkN.value+"/"+slug}
+function mkUpdate(){$("#mkLink").textContent=mkLink()}
+mkN.onchange=()=>{mkUpdate();key=mkN.value;C=N[key];brand=mkName.value.trim()||C.brand;applyPreview()};
+mkName.oninput=()=>{mkUpdate();brand=mkName.value.trim()||C.brand;$$(".brandName").forEach(e=>e.textContent=brand)};
+function applyPreview(){
+  $$(".brandName").forEach(e=>e.textContent=brand);$("#title").textContent=C.title;$("#eyebrow").textContent=`AE Intelligence · ${C.label} demo`;
+  $("#initials").textContent=brand.split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+  $("#tabSheet").firstChild.textContent="Google Sheet";$("#tabAlerts").firstChild.textContent=`${cap1(C.owner)} alerts`;
+  $("#kReqL").textContent=C.ReqTitle;$("#sheetName").textContent=C.ReqTitle;$("#sheetTab").textContent=C.ReqTitle;$("#fCust").textContent=C.Customer;
+  input.placeholder=`Message as the ${C.customer}…`;start();
+}
+$("#mkCopy").onclick=()=>{const t=mkLink();(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$("#mkCopy").textContent="Copied ✓";setTimeout(()=>$("#mkCopy").textContent="Copy link",1500)}).catch(()=>{const r=document.createRange();r.selectNodeContents($("#mkLink"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("#mkCopy").textContent="Selected, press copy"})};
+apply();mkN.value=key;mkUpdate();
 })();
 </script>
 
