@@ -238,12 +238,12 @@ html.film .maker{display:none}
 </head>
 <body>
 <div class="wrap">
-  <div class="maker" id="maker">
+  <div class="maker" id="maker" hidden>
     <label>Industry<select id="mkNiche"></select></label>
     <label>Company name<input id="mkName" placeholder="e.g. Bolas Homes"></label>
     <code id="mkLink"></code>
     <button class="btn primary" id="mkCopy" type="button">Copy link</button>
-    <p class="hint">Only you see this bar. Links with an industry and a company name open straight into that business's demo, without this bar.</p>
+    <p class="hint">Link builder, only at #builder. Prospects never see this bar.</p>
   </div>
 
   <header class="top">
@@ -516,10 +516,10 @@ const N={
 const ALIAS={"real-estate":"realestate",realestate:"realestate",realtor:"realestate",property:"realestate",properties:"realestate",shortlet:"shortlet","short-let":"shortlet",shortlets:"shortlet",apartment:"shortlet",apartments:"shortlet",airbnb:"shortlet",cars:"cars",car:"cars",autos:"cars",auto:"cars",dealer:"cars",restaurant:"restaurant",food:"restaurant",catering:"restaurant",kitchen:"restaurant",clinic:"clinic",hospital:"clinic",health:"clinic",salon:"salon",beauty:"salon",spa:"salon",hair:"salon",fashion:"fashion",boutique:"fashion",clothing:"fashion",clothes:"fashion",school:"school",schools:"school",admission:"school",admissions:"school"};
 
 /* ---------- link: #industry/Company-Name (also #industry--Company-Name or #industry) ---------- */
-let C,key,brand,hasNiche=false;
+let C,key,brand,hasNiche=false,isBuilder=false;
 function parseHash(){
   let h="";try{h=decodeURIComponent(location.hash.slice(1))}catch(e){}
-  h=h.replace(/^\/+/,"").trim();
+  h=h.replace(/^\/+/,"").trim();isBuilder=h.toLowerCase()==="builder";if(isBuilder)h="";
   let parts=h.split(/\/|--/).filter(Boolean),k=null,name="";
   if(parts.length&&ALIAS[parts[0].toLowerCase()]){k=ALIAS[parts[0].toLowerCase()];name=parts.slice(1).join(" ")}
   else{name=parts.join(" ")}
@@ -699,7 +699,7 @@ function apply(){
   $("#fCust").textContent=C.Customer;
   input.placeholder=`Message as the ${C.customer}…`;
   $("#footnote").textContent=`Preview with sample ${C.itemLabel.toLowerCase()}s and prices. In a live setup it runs on ${brand}'s own WhatsApp number, with their real offers and prices. Built by AE Intelligence.`;
-  $("#maker").hidden=hasNiche||FILM;
+  $("#maker").hidden=!isBuilder||FILM;
   start();
 }
 function start(silent){
